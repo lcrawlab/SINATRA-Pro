@@ -44,8 +44,9 @@ class mesh:
                 mismatch = True
         print(n_edges)
         if mismatch:
-            print("There are mismatch between number of edges and number of edges that connect two faces. The mesh might be unclosed."
-        
+            print("There are mismatch between number of edges and number of edges that connect two faces. The mesh might be unclosed.")
+        else:
+            print("There are no mismatch")
         return edges
 
     def read_off_file(self,filename):
