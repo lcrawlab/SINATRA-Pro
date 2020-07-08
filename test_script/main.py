@@ -6,10 +6,14 @@ from directions import *
 
 ## Test initialization and import OFF files
 meshCube = mesh()
+#meshCube.read_off_file(filename='data/1xpb_pymol.off')
+
 meshCube.read_off_file(filename='data/bean_off_file.off')
-#print(meshCube.vertices.shape)
-#print(meshCube.edges.shape)
-#print(len(meshCube.faces))
+#meshCube.read_obj_file(filename='data/1xpb_chimera.obj')
+
+print(meshCube.vertices.shape)
+print(meshCube.faces.shape)
+print(meshCube.edges.shape)
 
 #vf = compute_vertex_function(meshCube,[1,0,0])
 #output = compute_ec_curve(meshCube,vf,standardized=True,ec_type="EC")
