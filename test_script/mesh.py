@@ -3,8 +3,6 @@
 import numpy as np
 from itertools import combinations
 
-import timeit
-
 def smaller_in_front(m,n):
     if m > n:
         return n, m
@@ -60,11 +58,10 @@ class mesh:
             for a in combinations(face,2):
                 m, n = smaller_in_front(a[0],a[1])
                 edges.append([m,n])
-        self.edges = np.unique(edges,axis=0)
+        edges = np.unique(edges,axis=0)
         return edges
 
-
-    def read_off_file(self,filename):
+    def read_off_file(self,filename,read_edges_from_file=False,edges_filename='edges.txt'):
         vertices = []
         faces = []
         nline = 0
@@ -92,16 +89,19 @@ class mesh:
                 nline += 1
         self.n_vertex = n_V
         self.n_face = n_F
-        self.n_edge = n_E
         self.vertices = np.array(vertices)
         self.faces = faces
-        if nontriangular:
-            self.edges = self.intersecting_edges()
+        if read_edges_from_file:
+            self.edges = np.loadtxt(edges_filename,dtype=int,delimiter=' ')
         else:
-            self.edges = self.unique_edges()
+            if nontriangular:
+                self.edges = self.intersecting_edges()
+            else:
+                self.edges = self.unique_edges()
+        self.n_edge = self.edges.shape[0]
         return
 
-    def read_obj_file(self,filename):
+    def read_obj_file(self,filename,read_edges_from_file=False,edges_filename='edges.txt'):
         vertices = []
         faces = []
         nline = 0
@@ -115,20 +115,26 @@ class mesh:
                     vertex = [float(a) for a in p[1:]]
                     vertices.append(vertex)
                 elif p[0] == 'f': 
-                    face = [int(a.split('/')[0]) for a in p[1:]]
+                    face = [int(a.split('/')[0])-1 for a in p[1:]]
                     if len(face) > 3:
                         nontriangular = True
                     faces.append(face)
                 nline += 1
         self.vertices = np.array(vertices)
-        self.faces = np.array(faces)
-        if nontriangular:
-            self.edges = self.intersecting_edges()
+        self.faces = faces
+        if read_edges_from_file:
+            self.edges = np.loadtxt(edges_filename,dtype=int,delimiter=' ')
         else:
-            self.edges = self.unique_edges()
+            if nontriangular:
+                self.edges = self.intersecting_edges()
+            else:
+                self.edges = self.unique_edges()
         self.n_vertex = self.vertices.shape[0]
-        self.n_face = self.faces.shape[0]
+        self.n_face = len(faces)
         self.n_edge = self.edges.shape[0]
         return
 
+    def save_edges_file(self,filename):
+        np.savetxt(filename,self.edges,fmt=['%d','%d'])
+        return
 

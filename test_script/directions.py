@@ -32,8 +32,8 @@ def generate_equidistributed_points(desired_number, N):
     a = 4*np.pi/N
     d = np.sqrt(a)
     points = [] #np.zeros((n_directions,3),dtype=float)
-    M_theta = int(round(np.pi/d))
-    d_theta = np.pi/M_theta
+    M_theta = int(round(np.pi*.5/d))
+    d_theta = np.pi*.5/M_theta
     d_phi = a/d_theta
     for i in range(M_theta):
         theta = np.pi * (i + 0.5) / M_theta

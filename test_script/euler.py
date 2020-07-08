@@ -39,12 +39,13 @@ def compute_ec_curve(mesh, vertex_function, curve_length = 20, ball_radius = 2.0
     face_hist, bin_edges = np.histogram(face_function,bins=radius)
     F = np.cumsum(face_hist)
     euler = V-E+F
+    euler = np.append(0,euler)
     if ec_type == "EC":
         return radius, euler
     elif ec_type == "DECT":
-        return radius, np.append(0,differentiate(x,euler))
+        return radius, np.append(0,differentiate(radius,euler))
     elif ec_type == "SECT":
-        return radius, np.appedn(0,integrate(x,euler))
+        return radius, np.append(0,integrate(radius,euler))
     else:
         return
 
