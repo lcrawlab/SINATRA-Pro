@@ -15,58 +15,54 @@ class mesh:
     def __init(self):
         return
 
-    ## new version to save memory for large mesh
+    ## new version to save memory for large mesh data
+    
     def intersecting_edges(self):
-        ## I connect all possible pairs of points on each face
-        ## i.e. for squares, I also connect the diagonals
-        ## then count number of connecting lines between two point 
-        ## since only the "edge" lines will border another face,
-        ## the bordering edge will have 2 "borders"
-        ## while the diagonals will have 1 "border"
+        ##
+        ## Edges are defined as connection between any two points shared by two faces
+        ##
         borders = []
         edges = []
         for face in self.faces:
             for a in combinations(face,2):
                 m, n = smaller_in_front(a[0],a[1])
-                #print(borders,[m,n],[m,n] in borders)
                 if [m,n] in borders:
                     edges.append([m,n])
                     borders.remove([m,n])
                 else:
                     borders.append([m,n])
-
-        ## when the connecting line is shared by two faces, it counts as an edge bordering two faces
-        ## assuming the mesh does not contain face that, e.g. hangs on the diagonals of a square face
-        #edges = np.transpose((borders == 2).nonzero())
-
-        edges = np.array(edges)
-        print(borders)
-        print(edges.shape)
-        exit()
-        n_edges = edges.shape[0]
-        
-        ## check if all vertices are connected (not isolated)
-        print(borders)
-
+        ## 
         ## check if number of edges on the face match the number of vertices (e.g. 3 for a triangle, 4 for a sqaure)
         ## if the mesh is continuous, there will be no mismatch
+        ##
         mismatch = False
+        missed_edges = 0
         for face in self.faces:
             n_edgeConnected = 0
             for a in combinations(face,2):
                 m, n = smaller_in_front(a[0],a[1])
-                if np.any(edges == [m,n]):
+                if [m,n] in edges:
                     n_edgeConnected += 1
             if n_edgeConnected != len(face):
-                n_edges += len(face) - n_edgeConnected
-                print(face,n_edgeConnected)
+                missed_edges += len(face) - n_edgeConnected
                 mismatch = True
-        print(n_edges)
+        edges = np.array(edges)
+        n_edges = edges.shape[0]
         if mismatch:
             print("There are mismatch between number of edges and number of edges that connect two faces. The mesh might be unclosed.")
         else:
-            print("There are no mismatch")
+            print("There are no mismatch. The mesh is closed.")
         return edges
+    
+    def unique_edges(self):
+        edges = []
+        for face in self.faces:
+            for a in combinations(face,2):
+                m, n = smaller_in_front(a[0],a[1])
+                edges.append([m,n])
+        self.edges = np.unique(edges,axis=0)
+        return edges
+
 
     def read_off_file(self,filename):
         vertices = []
@@ -75,6 +71,7 @@ class mesh:
         n_V = 0
         n_F = 0
         n_E = 0
+        nontriangular = False
         with open(filename,'r') as f:
             for line in f:
                 if line[0] == '#' or line.strip() == "OFF":
@@ -88,6 +85,8 @@ class mesh:
                     vertex = np.array([float(a) for a in p])
                     vertices.append(vertex)
                 else:
+                    if int(p[0]) > 3:
+                        nontriangular = True
                     face = [int(p[i+1]) for i in range(int(p[0]))]
                     faces.append(face)
                 nline += 1
@@ -95,14 +94,18 @@ class mesh:
         self.n_face = n_F
         self.n_edge = n_E
         self.vertices = np.array(vertices)
-        self.faces = np.array(faces)
-        self.edges = self.intersecting_edges()
+        self.faces = faces
+        if nontriangular:
+            self.edges = self.intersecting_edges()
+        else:
+            self.edges = self.unique_edges()
         return
 
-    def read_obj_file(self,filename,nontriangular=False):
+    def read_obj_file(self,filename):
         vertices = []
         faces = []
         nline = 0
+        nontriangular = False 
         with open(filename,'r') as f:
             for line in f:
                 if line[0] == '#':
@@ -113,19 +116,16 @@ class mesh:
                     vertices.append(vertex)
                 elif p[0] == 'f': 
                     face = [int(a.split('/')[0]) for a in p[1:]]
+                    if len(face) > 3:
+                        nontriangular = True
                     faces.append(face)
                 nline += 1
         self.vertices = np.array(vertices)
         self.faces = np.array(faces)
-        if nontriangular == True:
+        if nontriangular:
             self.edges = self.intersecting_edges()
         else:
-            edges = []
-            for face in self.faces:
-                for a in combinations(face,2):
-                    m, n = smaller_in_front(a[0],a[1])
-                    edges.append([m,n])
-            self.edges = np.unique(edges,axis=0)
+            self.edges = self.unique_edges()
         self.n_vertex = self.vertices.shape[0]
         self.n_face = self.faces.shape[0]
         self.n_edge = self.edges.shape[0]
