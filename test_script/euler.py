@@ -1,6 +1,7 @@
 #!/bin/python3
 
 import numpy as np
+from scipy.integrate import cumtrapz 
 
 def compute_vertex_function(mesh,direction):
     vf = np.dot(mesh.vertices,direction)
@@ -45,43 +46,12 @@ def compute_ec_curve(mesh, vertex_function, curve_length = 20, ball_radius = 2.0
     elif ec_type == "DECT":
         return radius, np.append(0,differentiate(radius,euler))
     elif ec_type == "SECT":
-        return radius, np.append(0,integrate(radius,euler))
+        cumtrap = cumtrapz(euler,radius,initial=0)
+        return radius, cumtrap
     else:
         return
-
-'''
-## Testing opposite direction of filtration
-def compute_ec_curve_test(mesh, vertex_function, curve_length = 20, ball_radius = 2.0, ec_type = "EC", standardized = False,first_column_index = False):
-    if standardized:
-        radius = np.linspace(-ball_radius,ball_radius,curve_length+1)
-    else:
-        radius = np.linspace(np.amin(vertex_function),np.amax(vertex_function),curve_length+1)
-    vertex_hist, bin_edges = np.histogram(vertex_function,bins=radius)
-    V = np.cumsum(vertex_hist[::-1])
-    # filtrating edges
-    edge_function = np.amax(vertex_function[mesh.edges],axis=1)
-    edge_hist, bin_edges = np.histogram(edge_function,bins=radius)
-    E = np.cumsum(edge_hist[::-1])
-    # filtrating faces
-    face_function = np.array([np.amax(vertex_function[face]) for face in mesh.faces])
-    face_hist, bin_edges = np.histogram(face_function,bins=radius)
-    F = np.cumsum(face_hist[::-1])
-    euler = V-E+F
-    euler = np.append(0,euler)
-    #radius = radius[::-1]
-    if ec_type == "EC":
-        return radius, euler
-    elif ec_type == "DECT":
-        return radius, np.append(0,differentiate(radius,euler))
-    elif ec_type == "SECT":
-        return radius, np.append(0,integrate(radius,euler))
-    else:
-        return
-'''
 
 def differentiate(x,y):
     return (y[1:]-y[:-1])/(x[1:]-x[:-1])
 
-def integrate(x,y):
-    trapz = (y[1:]+y[:-1])*(x[1:]+x[:-1])*.5
-    return np.cumsum(trapz)/y.size
+
