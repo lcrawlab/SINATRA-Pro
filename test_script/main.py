@@ -10,11 +10,11 @@ import os
 
 meshProtein = mesh()
 
-#directions = generate_equidistributed_cones(n_directions=20, directions_per_cone=1, hemisphere=False)
-#np.savetxt('directions.txt',directions)
+directions = generate_equidistributed_cones(n_directions=20, directions_per_cone=1, hemisphere=False)
+np.savetxt('directions.txt',directions)
 directions = np.loadtxt('directions.txt')
 
-for i in range(1,101):
+for i in range(88,101):
     meshProtein.read_obj_file(filename='mesh/WT/WT_chimera_%d.obj'%i,read_edges_from_file=True,edges_filename='edges/WT/WT_chimera_%d.txt'%i)
     #meshProtein.save_edges_file('edges/WT/WT_chimera_%d.txt'%i)
     directions = generate_equidistributed_cones(n_directions=20, directions_per_cone=1, hemisphere=False)
