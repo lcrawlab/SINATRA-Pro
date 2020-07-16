@@ -1,11 +1,15 @@
 #!/bin/python3
 
 import numpy as np
-from scipy.spatial.distance import pdist, squareform
+from scipy.special import expit
+from numpy.linalg import solve
 
-import time
+#import time
 
-def GuassianKernal(x,bandwidth):
+from numba import jit
+
+@jit(nopython=True,parallel=True)
+def GuassianKernel(x,bandwidth=1.0):
     n = x.shape[0]
     K = np.zeros((n,n),dtype=float)
     for i in range(n):
@@ -16,16 +20,27 @@ def GuassianKernal(x,bandwidth):
             K[j,i] = K[i,j]
     return K
 
-
-x = np.arange(2000).reshape(100,20)
-start = time.time()
-K = GuassianKernal(x,0.1)
-end = time.time()
-print(end-start)
-
-print(K)
-
-
+def LaplaceApproximation(Kn,y):
+    n = len(y)
+    f = np.zeros(n,dtype=float)
+    oldobj = 0
+    for k in range(100):
+        #print(k)
+        sigf = expit(f)
+        W = np.diag(sigf*(1-sigf))
+        sqrtW = np.sqrt(W)
+        B = np.identity(n) + sqrtW @ Kn @ sqrtW
+        L = np.linalg.cholesky(B)
+        b = W @ f + y - sigf
+        a = b - solve(sqrtW @ L.T,solve(L,sqrtW @ Kn @ b))*0.1
+        f = Kn @ a
+        obj = - .5 * (a.T @ f) - sigf
+        print(np.mean(obj-oldobj))
+        oldobj = obj
+    v = solve(L,sqrtW @ Kn)
+    mean = f
+    covariance = Kn - np.dot(v,v)
+    return mean, covariance
 
 
 
