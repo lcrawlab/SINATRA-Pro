@@ -14,8 +14,8 @@ X = []
 y = []
 
 prefixes = ['ec_sphere/WT/WT_chimera_','ec_sphere/R164S/R164S_chimera_']#,'ec_sphere/R164G/R164G_chimera_']
-n_sample = 20
-class_labels = [0,1]#,2]
+n_sample = 50
+class_labels = [1,-1]
 
 for i in range(len(prefixes)):
     for j in range(1,n_sample+1):
@@ -27,10 +27,16 @@ X = np.array(X)
 y = np.array(y)
 
 # Hard coded Laplace Approximation
-K = GuassianKernel(X,bandwidth=0.1)
-mean, sigma = ExpectationPropagation(K,y)
-print(mean,len(mean))
-print(sigma,sigma.shape)
+K = GuassianKernel(X,sigma=1.0)
+mean, sigma_n, f, log_marginal_likelihood = LaplaceApproximation(K,y,step_size=0.001)
+#print(mean, sigma, f, log_marginal_likelihood)
+
+xs = np.loadtxt('ec_sphere/WT/WT_chimera_100.dat')[1:].flatten()
+LaplaceApproximationPrediction(f,sigma_n,X,y,K,xs)
+
+#mean, sigma = ExpectationPropagation(K,y)
+#print(mean,len(mean))
+#print(sigma,sigma.shape)
 
 
 '''

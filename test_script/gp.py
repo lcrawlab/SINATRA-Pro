@@ -9,9 +9,10 @@ from scipy.stats import norm
 from numba import jit
 
 @jit(nopython=True,parallel=True)
-def GuassianKernel(x,bandwidth=1.0):
+def GuassianKernel(x,sigma=1.0):
     n = x.shape[0]
     K = np.zeros((n,n))
+    bandwidth = .5/sigma/sigma
     for i in range(n):
         K[i,i] = 1
         for j in range(i+1,n):
@@ -22,9 +23,10 @@ def GuassianKernel(x,bandwidth=1.0):
 
 # Binary Laplace Apprxoimation classifier
 # RW algorithm 3.1
-def LaplaceApproximation(K,y,step_size=0.1):
+def LaplaceApproximation(K,y,step_size=0.01):
     n = len(y)
     f = np.zeros(n,dtype=float)
+    oldobj = 1e99
     for k in range(100):
         sigf = expit(f)
         W = np.diag(sigf*(1-sigf))
@@ -35,13 +37,42 @@ def LaplaceApproximation(K,y,step_size=0.1):
         # Newton descent step
         a = b - solve(sqrtW @ L.T,solve(L,sqrtW @ K @ b))*step_size
         f = K @ a
-        obj = - .5 * (a.T @ f) - sigf
-        print(np.mean(obj))
+        obj =  - .5 * (a.T @ f) - sigf
+        newobj = np.mean(obj)
+        if np.fabs(newobj - oldobj) < 1e-5:
+            break
+        oldobj = newobj
     v = solve(L,sqrtW @ K)
     mean = f
-    covariance = K - np.dot(v,v)
-    return mean, covariance
+    sigma = K - np.dot(v,v)
+    log_marginal_likelihood = newobj - np.sum(np.log(np.diagonal(L)))
+    return mean, sigma, f, log_marginal_likelihood
 
+def CovarianceFunction(K,sigma_n,X,y,xs,sigma=1.0):
+    n = len(X)
+    bandwidth = .5/sigma/sigma
+    alpha = np.linalg.inv(K+np.diag(sigma_n)) @ y
+    fx = 0
+    kx = np.zeros(n)
+    for i in range(n):
+        kx[i] = np.exp(-np.mean((X[i]-xs)**2)*bandwidth)
+        fx += alpha[i]*kx[i]
+    return fx, kx
+    
+def LaplaceApproximationPrediction(f,sigma_n,X,y,K,xs):
+    n = len(y)
+    sigf = expit(f)
+    W = np.diag(sigf*(1-sigf))
+    sqrtW = np.sqrt(W)
+    B = np.identity(n) + sqrtW @ K @ sqrtW
+    L = cholesky(B)
+    fx, kx = CovarianceFunction(K,sigma_n,X,y,xs,1.0)
+    fs = kx @ (y - sigf)
+    v = solve(L, sqrtW @ kx)
+    sigma = np.dot(kx,kx) - np.dot(v,v)
+    print(fs,sigma)
+    #predict_prob = norm(z,fs,sigma)
+    return #predict_prob
 
 def ExpectationPropagation(K,y):
     n = len(y)
@@ -52,18 +83,18 @@ def ExpectationPropagation(K,y):
     for j in range(2):
         for i in range(n):
             a = sigma[i,i]**(-2.)
+
             tau_minus_i = a - tau_tilde[i]
             nu_minus_i = a*mu[i] - nu_tilde[i]
-
             mu_minus_i = nu_minus_i/tau_minus_i
             sigma_minus_i = tau_minus_i**(-.5)
             sigma_minus_i_sq = sigma_minus_i**2
-            
+             
             # Compute Marginal Moments
             z_i = y[i]*mu_minus_i/(np.sqrt(1+sigma_minus_i_sq))
-            print(z_i)
             dnorm_z_i = norm.pdf(z_i)
             pnorm_z_i = norm.logcdf(z_i)
+
             mu_hat_i = mu_minus_i + (y[i]*sigma_minus_i_sq*dnorm_z_i)/(pnorm_z_i*np.sqrt(1+sigma_minus_i_sq))
             sigma_hat_i = np.sqrt(sigma_minus_i_sq-(sigma_minus_i_sq**2*dnorm_z_i)/((1+sigma_minus_i_sq)*pnorm_z_i)*(z_i + dnorm_z_i/(z_i)) )
 
@@ -84,4 +115,21 @@ def ExpectationPropagation(K,y):
     mu = sigma @ nu_tilde
 
     return mu, sigma
+
+log_sqrt_2pi = .5*np.log(2*np.pi)
+def log_likelihood(f,y):
+    return np.sum(-(f*y)**2)-log_sqrt_2pi*len(f)
+
+def EllipticalSliceSampling(K,y):
+    n = len(y)
+    f = np.zeros(n,dtype=float)
+    for k in range(100):
+        sigf = expit(f)
+        W = np.diag(sigf*(1-sigf))
+        sqrtW = np.sqrt(W)
+        B = np.identity(n) + sqrtW @ K @ sqrtW
+        L = cholesky(B)
+        b = W @ f + y - sigf
+        
+    return
 
