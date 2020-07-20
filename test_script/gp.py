@@ -2,6 +2,7 @@
 
 import numpy as np
 from scipy.special import expit
+from scipy.integrate import trapz
 from numpy.linalg import cholesky, solve
 from scipy.stats import norm
 #import time
@@ -67,12 +68,13 @@ def LaplaceApproximationPrediction(f,sigma_n,X,y,K,xs):
     B = np.identity(n) + sqrtW @ K @ sqrtW
     L = cholesky(B)
     fx, kx = CovarianceFunction(K,sigma_n,X,y,xs,1.0)
-    fs = kx @ (y - sigf)
+    fs = np.dot(kx,(y - sigf))
     v = solve(L, sqrtW @ kx)
     sigma = np.dot(kx,kx) - np.dot(v,v)
-    print(fs,sigma)
-    #predict_prob = norm(z,fs,sigma)
-    return #predict_prob
+    z = np.linspace(fs-sigma*5,fs+sigma*5,201)
+    print(norm.pdf(z,fs,sigma))
+    predict_prob = trapz(expit(z)*norm.pdf(z,fs))/len(z)
+    return predict_prob
 
 def ExpectationPropagation(K,y):
     n = len(y)

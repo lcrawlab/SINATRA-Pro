@@ -31,13 +31,13 @@ K = GuassianKernel(X,sigma=1.0)
 mean, sigma_n, f, log_marginal_likelihood = LaplaceApproximation(K,y,step_size=0.001)
 #print(mean, sigma, f, log_marginal_likelihood)
 
-xs = np.loadtxt('ec_sphere/WT/WT_chimera_100.dat')[1:].flatten()
-LaplaceApproximationPrediction(f,sigma_n,X,y,K,xs)
+xs = np.loadtxt('ec_sphere/R164S/R164S_chimera_98.dat')[1:].flatten()
+predict_prob = LaplaceApproximationPrediction(f,sigma_n,X,y,K,xs)
+print(predict_prob)
 
 #mean, sigma = ExpectationPropagation(K,y)
 #print(mean,len(mean))
 #print(sigma,sigma.shape)
-
 
 '''
 import pymc3 as pm
