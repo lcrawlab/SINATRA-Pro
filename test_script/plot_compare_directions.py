@@ -12,7 +12,7 @@ mpl.rcParams['font.family'] = 'sans-serif'
 
 data = []
 for i in range(1,101):
-    raw = np.loadtxt('ec_sphere/WT/WT_chimera_%d.dat'%i)
+    raw = np.loadtxt('dect_sphere/WT/WT_chimera_%d.dat'%i)
     x = raw[0]
     
     n_direction = raw.shape[0]-1
@@ -26,7 +26,7 @@ for i in range(1,101):
         y = raw[1+idir]
         ax1.plot(x,y,linestyle='-',color=colors[idir])
 
-    ax1.set_xticks(np.arange(-30,32,10))
+    ax1.set_xticks(np.arange(-40,42,10))
     xml = MultipleLocator(2)
     ax1.xaxis.set_minor_locator(xml)
 
@@ -39,12 +39,12 @@ for i in range(1,101):
     ax1.tick_params(axis='y',labelsize=14)
     ax1.tick_params(axis='x',labelsize=14)
 
-    ax1.set_xlim(-32,32)
-    ax1.set_ylim(-20,400)
+    ax1.set_xlim(-40,40)
+    ax1.set_ylim(-40,40)
     #ax1.legend(loc='upper right',fontsize=16)
 
     plt.tight_layout()
-    plt.savefig('ec_direction_%d.pdf'%i)
-    #plt.show()
+    plt.savefig('dect_direction_%d.pdf'%i)
+    plt.show()
     plt.close()
 

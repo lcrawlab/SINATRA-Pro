@@ -44,13 +44,13 @@ def compute_ec_curve(mesh, directions, n_filtration = 20, ball_radius = 2.0, ec_
         face_hist, bin_edges = np.histogram(face_function,bins=radius)
         F = np.cumsum(face_hist)
         eulers[i] = np.append(0,V-E+F)
-
+    
     if ec_type == "EC":
         return radius, eulers
     elif ec_type == "DECT":
-        dect = np.zeros((n_direction,n_filtration),dtype=float)
+        dect = np.zeros((n_direction,n_filtration+1),dtype=float)
         for i in range(n_direction):
-            dect[i,1:] = (euler[i,1:]-euler[i,:-1])/(radius[i,1:]-radius[i,:-1])
+            dect[i,1:] = (eulers[i,1:]-eulers[i,:-1])/(radius[1:]-radius[:-1])
         return radius, dect
     elif ec_type == "SECT":
         sect = np.zeros((n_direction,n_filtration),dtype=float)
