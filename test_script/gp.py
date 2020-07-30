@@ -24,7 +24,7 @@ def GuassianKernel(x,sigma=1.0):
 
 # Binary Laplace Apprxoimation classifier
 # RW algorithm 3.1
-def LaplaceApproximation(K,y,step_size=0.01):
+def LaplaceApproximation(K,y,step_size=1.0):
     n = len(y)
     f = np.zeros(n,dtype=float)
     oldobj = 1e99
@@ -40,6 +40,7 @@ def LaplaceApproximation(K,y,step_size=0.01):
         f = K @ a
         obj =  - .5 * (a.T @ f) - sigf
         newobj = np.mean(obj)
+        print(newobj)        
         if np.fabs(newobj - oldobj) < 1e-5:
             break
         oldobj = newobj
@@ -72,7 +73,6 @@ def LaplaceApproximationPrediction(f,sigma_n,X,y,K,xs):
     v = solve(L, sqrtW @ kx)
     sigma = np.dot(kx,kx) - np.dot(v,v)
     z = np.linspace(fs-sigma*5,fs+sigma*5,201)
-    print(norm.pdf(z,fs,sigma))
     predict_prob = trapz(expit(z)*norm.pdf(z,fs))/len(z)
     return predict_prob
 
