@@ -19,11 +19,12 @@ for i in range(1,101):
     #meshProtein.save_edges_file('edges/WT/WT_chimera_%d.txt'%i)
     outfilename = 'dect_sphere/R164G/R164G_chimera_%d.dat'%i
     if os.path.exists(outfilename):
+        continue
+    else:
         open(outfilename, 'w').close()
-
-    with open(outfilename,'ab') as f:
-        t, ecs = compute_ec_curve(meshProtein,directions,n_filtration=100,ball_radius=40.0,standardized=True,ec_type="DECT")
-        np.savetxt(f,[t],fmt="%.8f",delimiter=" ")
-        for ec in ecs:
-            np.savetxt(f,[ec],fmt="%.8e",delimiter=" ")
+        with open(outfilename,'ab') as f:
+            t, ecs = compute_ec_curve(meshProtein,directions,n_filtration=100,ball_radius=40.0,standardized=True,ec_type="DECT")
+            np.savetxt(f,[t],fmt="%.8f",delimiter=" ")
+            for ec in ecs:
+                np.savetxt(f,[ec],fmt="%.8e",delimiter=" ")
 
