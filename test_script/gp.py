@@ -10,10 +10,9 @@ from scipy.stats import norm
 from numba import jit
 
 @jit(nopython=True,parallel=True)
-def GuassianKernel(x,sigma=1.0):
+def GaussKernel(x,bandwidth=0.01):
     n = x.shape[0]
     K = np.zeros((n,n))
-    bandwidth = .5/sigma/sigma
     for i in range(n):
         K[i,i] = 1
         for j in range(i+1,n):
@@ -48,7 +47,7 @@ def LaplaceApproximation(K,y,step_size=1.0):
     mean = f
     sigma = K - np.dot(v,v)
     log_marginal_likelihood = newobj - np.sum(np.log(np.diagonal(L)))
-    return mean, sigma, f, log_marginal_likelihood
+    return mean, sigma
 
 def CovarianceFunction(K,sigma_n,X,y,xs,sigma=1.0):
     n = len(X)
@@ -122,9 +121,10 @@ log_sqrt_2pi = .5*np.log(2*np.pi)
 def log_likelihood(f,y):
     return np.sum(-(f*y)**2)-log_sqrt_2pi*len(f)
 
-def EllipticalSliceSampling(K,y):
+def EllipticalSliceSampling(K,y,num_mcmc_samples=1e5,probit=TRUE):
     n = len(y)
     f = np.zeros(n,dtype=float)
+    samples = []
     for k in range(100):
         sigf = expit(f)
         W = np.diag(sigf*(1-sigf))
@@ -133,5 +133,28 @@ def EllipticalSliceSampling(K,y):
         L = cholesky(B)
         b = W @ f + y - sigf
         
-    return
+    return np.array(samples)
 
+def find_rate_variables_with_other_sampling_methods(gp_data,bandwidth = 0.01,type = 'Laplace')
+    n = gp_data.shape[0]
+    X = gp_data[:,1:]
+    y = gp_data[:,0]
+    h = bandwidth
+    # RATE
+    f = np.zeros(n)
+    Kn = GaussKernel(X.T,bandwidth)
+    np.fill_diagonal(Kn,1)
+    if type == 'Laplace':
+        mu, sigma = LaplaceApproximation(Kn,y)
+        samples = numpy.random.multivariate_normal(mean=mu,cov=sigma,size=10000).T 
+    elif type == 'EP':
+        mu, sigma = ExpectationPropagation(Kn,y)
+        samples = numpy.random.multivariate_normal(mean=mu,cov=sigma,size=10000).T 
+    elif type == 'ESS':
+        samples = Elliptical_Slice_Sampling(Kn,y)
+    else:
+        return 
+    rates = RATE(X=X,f.draws=samples)
+    return rates
+    
+        

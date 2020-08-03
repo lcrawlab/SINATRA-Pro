@@ -103,6 +103,6 @@ def generate_equidistributed_cones(n_directions, cap_radius = 0.1, directions_pe
             for direction in rodrigues(sphere[i],cap_radius,directions_per_cone-1):
                 direction /= np.linalg.norm(direction)
                 directions.append(direction)
-    return directions
+    return np.array(directions)
 
 
