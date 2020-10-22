@@ -25,23 +25,10 @@ def rodrigues(z,r,j):
     C = np.dot(z,z0)*z
     directions = np.zeros((j,3))
     for i in range(j):
-        x = 2*np.pi*i/j
+        x = 2*np.pi*(i+1)/j
         directions[i,:] = z0*np.cos(x)+B*np.sin(x)+C*(1-np.cos(x))
     return directions
 
-'''
-def rodrigues(z,cap_radius,N):
-    directions = []
-    A = np.array([[ 0   ,-z[2], z[1]],
-                  [ z[2],    0, z[1]],
-                  [-z[1], z[0],    0]])
-    thetas = np.linspace(0,2*np.pi,N)
-    for theta in thetas:
-        R = np.identity(3) + A*np.sin(theta) + np.matmul(A,A)*(1-np.cos(theta))
-        direction = np.dot(A,z)
-        directions.append(direction)
-    return directions
-'''
 
 #  Generate Equidistributed points on a sphere / hemi-sphere
 # 
@@ -62,11 +49,11 @@ def generate_equidistributed_points(desired_number, N, hemisphere=False):
     else:
         a = 4*np.pi/N
         d = np.sqrt(a)
-        M_theta = int(round(np.pi*.5/d))
-        d_theta = np.pi*.5/M_theta
+        M_theta = int(round(np.pi/d))
+        d_theta = np.pi/M_theta
     d_phi = a/d_theta
     points = []
-    for i in range(M_theta+1):
+    for i in range(M_theta):
         if hemisphere:
             theta = np.pi * .5 * i / M_theta
         else:
