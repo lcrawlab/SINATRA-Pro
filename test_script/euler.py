@@ -47,7 +47,7 @@ def compute_ec_curve(mesh, directions, n_filtration = 25, ball_radius = 1.0, ec_
             F = 0
         eulers[i,1:] = V - E + F
     
-    if ec_type == "EC":
+    if ec_type == "ECT":
         return radius, eulers
     elif ec_type == "DECT":
         dect = np.zeros((n_direction,n_filtration),dtype=float)
