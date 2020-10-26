@@ -86,6 +86,18 @@ class ComplexFiltration:
         return faces
     
     # output OFF file for visualization
+    def write_mesh_file(self,edges,faces,filename='output.mesh'):
+        with open(filename,'w') as f:
+            f.write('%d %d %d\n'%(self.vertices.shape[0],edges.shape[0],faces.shape[0]))
+            for vertex in self.vertices:
+                f.write('%.6f %.6f %.6f\n'%(vertex[0],vertex[1],vertex[2]))
+            for edge in edges:
+                f.write('%d %d\n'%(edge[0],edge[1]))
+            for face in faces:
+                f.write('%d  %d %d %d  \n'%(len(face),face[0],face[1],face[2]))
+        return
+   
+    # output OFF file for visualization
     def write_off_file(self,edges,faces,filename='output.off'):
         with open(filename,'w') as f:
             f.write('OFF\n')
