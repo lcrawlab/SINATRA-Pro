@@ -23,8 +23,7 @@ density = calc_density(meshA=meshA,radius=radius,n_grid=n_grid)
 levelset = calc_level(density,n_level=n_level)
 
 meshB = mesh()
-heat = triangulation(meshB,radius,n_grid,levelset,n_level=n_level,cutoff=5,calc_heat=True)
-heat = np.array(heat)
-meshB.write_off_file_heat(heat,filename='output_5.off')
+heat = triangulation(radius=radius,n_grid=n_grid,levelset=levelset,n_level=n_level,cutoff=1,calc_heat=True,seperate_off_file=True)
+#meshB.write_off_file_heat(heat,filename='output_5.off')
 
 
