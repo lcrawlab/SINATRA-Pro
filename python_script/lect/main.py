@@ -8,16 +8,9 @@ import numpy as np
 import os, sys
 import MDAnalysis as mda
 
-mutant = "WT"
-
-
 np.set_printoptions(formatter={'float': '{: 0.3f}'.format})
 
-frame = 0
-
-trajwhole = mda.Universe('../pdb_noh/%s_65_213/%s_frame%d.pdb'%(mutant,mutant,frame)).select_atoms('protein and not type H')
-#    sys.stdout.write('Constructing topology for %s for Frame %d...\r'%(mutant,frame))
-#    sys.stdout.flush()
+trajwhole = mda.Universe('WT_frame0.pdb').select_atoms('protein and not type H')
 
 n_grid = 51
 n_level = 10
