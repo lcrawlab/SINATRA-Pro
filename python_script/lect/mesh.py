@@ -15,7 +15,7 @@ class mesh:
         self.edges = []
         self.faces = []
         return
-    
+    ''' 
     def intersecting_edges(self):
 
         ## I connect all possible pairs of points on each face
@@ -31,6 +31,7 @@ class mesh:
                     borders[a[0],a[1]] += 1
                 else:
                     borders[a[1],a[0]] += 1
+        
         ## when the connecting line is shared by two faces, it counts as an edge bordering two faces
         ## assuming the mesh does not contain face that, e.g. hangs on the diagonals of a square face
         edges = np.transpose((borders == 2).nonzero())
@@ -49,16 +50,12 @@ class mesh:
                     n_edgeConnected += 1
             if n_edgeConnected != len(face):
                 n_edges += len(face) - n_edgeConnected
-                print(face,n_edgeConnected)
                 mismatch = True
-        print(n_edges)
         if mismatch:
             print("There are mismatch between number of edges and number of edges that connect two faces. The mesh might be unclosed.")
         else:
             print("There are no mismatch")
-        return edges
-
-    '''
+        
         ##
         ## Edges are defined as connection between any two points shared by two faces
         ##
@@ -72,6 +69,7 @@ class mesh:
                     borders.remove([m,n])
                 else:
                     borders.append([m,n])
+        
         ## 
         ## check if number of edges on the face match the number of vertices (e.g. 3 for a triangle, 4 for a sqaure)
         ## if the mesh is continuous, there will be no mismatch
@@ -95,15 +93,14 @@ class mesh:
             print("There are no mismatch. The mesh is closed.")
         return edges
     '''
-
     def unique_edges(self):
         edges = []
         for face in self.faces:
-            for a in combinations(face,2):
-                m, n = smaller_in_front(a[0],a[1])
+            for i,j in [[0,1],[1,2],[2,3],[3,0]]:
+                m, n = smaller_in_front(face[i],face[j])
                 edges.append([m,n])
-        edges = np.unique(edges,axis=0)
-        return edges
+        self.edges = np.unique(edges,axis=0)
+        return
 
     def read_off_file(self,filename,read_edges_from_file=False,edges_filename='edges.txt'):
         vertices = []
@@ -112,7 +109,6 @@ class mesh:
         n_V = 0
         n_F = 0
         n_E = 0
-        nontriangular = False
         with open(filename,'r') as f:
             for line in f:
                 if line[0] == '#' or line.strip() == "OFF":
@@ -134,14 +130,11 @@ class mesh:
         self.n_vertex = n_V
         self.n_face = n_F
         self.vertices = np.array(vertices)
-        self.faces = faces
+        self.faces = np.array(faces)
         if read_edges_from_file:
             self.edges = np.loadtxt(edges_filename,dtype=int,delimiter=' ')
         else:
-            if nontriangular:
-                self.edges = self.intersecting_edges()
-            else:
-                self.edges = self.unique_edges()
+            self.unique_edges()
         self.n_edge = self.edges.shape[0]
         return
    
@@ -159,8 +152,8 @@ class mesh:
                     self.n_edge = int(p[1])
                     self.n_face = int(p[2])
                     self.vertices = np.zeros((self.n_vertex,3),dtype=float)
-                    self.faces = np.zeros((self.n_face,3),dtype=int)
-                    self.edges = np.zeros((self.n_edge,3),dtype=int)
+                    self.edges = np.zeros((self.n_edge,2),dtype=int)
+                    self.faces = []
                 elif n_line < self.n_vertex + 1:
                     if i_v < self.n_vertex:
                         for i in range(3):
@@ -173,8 +166,10 @@ class mesh:
                         i_e += 1
                 else:
                     if i_f < self.n_face:
+                        face = []
                         for i in range(int(p[0])):
-                            self.faces[i_f][i] = int(p[i+1])
+                            face.append(int(p[i+1]))
+                        self.faces.append(face)
                 n_line += 1
         return
     
@@ -191,6 +186,20 @@ class mesh:
                 f.write(' \n')
         return
     
+    def write_mesh_file(self,edges,faces,filename='output.mesh'):
+        with open(filename,'w') as f:
+            f.write('%d %d %d\n'%(self.vertices.shape[0],edges.shape[0],faces.shape[0]))
+            for vertex in self.vertices:
+                f.write('%.6f %.6f %.6f\n'%(vertex[0],vertex[1],vertex[2]))
+            for edge in edges:
+                f.write('%d %d\n'%(edge[0],edge[1]))
+            for face in faces:
+                f.write('%d  '%len(face))
+                for a in face:
+                    f.write('%d '%a)
+                f.write(' \n')
+        return
+   
     def centering(self):
         center = np.mean(self.vertices,axis=0)
         self.vertices = self.vertices - center
