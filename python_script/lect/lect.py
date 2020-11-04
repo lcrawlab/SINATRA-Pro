@@ -2,12 +2,12 @@
 
 from mesh import *
 import numpy as np
+from numba import jit
 from matplotlib import pyplot as plt
 from matplotlib import cm
 from matplotlib.colors import to_rgb
 from scipy.spatial import Delaunay
-
-from numba import jit
+from scipy.spatial.distance import pdist
 
 @jit(nopython=True)
 def calc_density_grid(density,dx,dy,dz,n_grid,alpha=1.0,lmbda=1.0):
@@ -59,6 +59,8 @@ def triangulation(radius,n_grid,levelset,n_level,cutoff=1,calc_heat=False,sepera
         colors = cm.rainbow(np.linspace(0,1,n_level))
         spectrum = np.floor(np.array([to_rgb(a) for a in colors])*255).astype(int)
     x = np.linspace(-radius,radius,n_grid)
+    gridsize = x[1]-x[0]
+    shapecutoff = gridsize*5
     grid = np.array(np.meshgrid(x,x,x))
     meshB = mesh()
     for i in range(cutoff,n_level):
@@ -74,21 +76,25 @@ def triangulation(radius,n_grid,levelset,n_level,cutoff=1,calc_heat=False,sepera
             meshB.vertices = np.vstack((meshB.vertices,points))
         if len(points) > 0:
             tri = Delaunay(points)
-            if len(meshB.faces) == 0:
-                meshB.faces = tri.simplices
-            else:
-                meshB.faces = np.vstack((meshB.faces,tri.simplices))
-            if calc_heat:
-                for j in range(tri.simplices.shape[0]):
-                    heat.append(spectrum[i])
+            for face in tri.simplices:
+                vertices = points[face]
+                dist = pdist(vertices)
+                if np.any(dist > shapecutoff):
+                    continue
+                else:
+                    meshB.faces.append(face)
+                    if calc_heat:
+                        heat.append(spectrum[i])
         if seperate_off_file:
+            meshB.faces = np.array(meshB.faces)
             if calc_heat:
                 heat = np.array(heat)
                 meshB.write_off_file_heat(heat=heat,filename=filename+"_%d_heat.off"%i)
             else:
                 meshB.write_off_file(filename=filename+"_%d.off"%i)
+    if not seperate_off_file:
+        meshB.faces = np.array(meshB.faces)
     if calc_heat:
         return np.array(heat)
     return
-
 
