@@ -2,11 +2,12 @@
 
 from mesh import *
 import numpy as np
-from numba import jit
 from matplotlib import pyplot as plt
 from matplotlib import cm
 from matplotlib.colors import to_rgb
 from scipy.spatial import Delaunay
+
+from numba import jit
 
 @jit(nopython=True)
 def calc_density_grid(density,dx,dy,dz,n_grid,alpha=1.0,lmbda=1.0):
@@ -26,6 +27,25 @@ def calc_density(meshA,radius=1.0,n_grid=11,alpha=1.0,lmbda=1.0):
         dz = x[2]-p
         calc_density_grid(density,dx,dy,dz,n_grid)
     return density
+
+'''
+def calc_density_new(meshA,radius=1.0,n_grid=11,alpha=1.0,lmbda=1.0):
+    p = np.linspace(-radius,radius,n_grid)
+    density = np.zeros((n_grid,n_grid,n_grid),dtype=float) 
+    for i in range(meshA.n_vertex):
+        x = meshA.vertices[i]
+        dx = x[0]-p
+        dy = x[1]-p
+        dz = x[2]-p
+        dx = dx*dx
+        dy = dy*dy
+        dz = dz*dz
+        dx = np.transpose(np.tile(np.tile(dx,n_grid),n_grid).reshape(n_grid,n_grid,n_grid),(2,1,0))
+        dy = np.transpose(np.tile(np.tile(dy,n_grid),n_grid).reshape(n_grid,n_grid,n_grid),(1,2,0))
+        dz = np.transpose(np.tile(np.tile(dz,n_grid),n_grid).reshape(n_grid,n_grid,n_grid),(0,1,2))
+        density += alpha/(dx+dy+dz+lmbda)
+    return density
+'''
 
 def calc_level(density,n_level=10):
     ymax = np.amax(density)
