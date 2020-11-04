@@ -122,8 +122,8 @@ class mesh:
                     vertex = np.array([float(a) for a in p])
                     vertices.append(vertex)
                 else:
-                    if int(p[0]) > 3:
-                        nontriangular = True
+                    #if int(p[0]) > 3:
+                    #    nontriangular = True
                     face = [int(p[i+1]) for i in range(int(p[0]))]
                     faces.append(face)
                 nline += 1
