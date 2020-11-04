@@ -19,7 +19,21 @@ meshA = mesh()
 meshA.vertices = trajwhole.positions
 meshA.n_vertex = meshA.vertices.shape[0]
 radius = np.amax(np.linalg.norm(meshA.vertices,axis=1))
+
+#import time
+
+#t0 = time.clock()
+#density_new = calc_density_new(meshA=meshA,radius=radius,n_grid=n_grid)
+#t1 = time.clock()
+#print(t1-t0)
+
+#t0 = time.clock()
 density = calc_density(meshA=meshA,radius=radius,n_grid=n_grid)
+#t1 = time.clock()
+#print(t1-t0)
+
+#print(density-density_new)
+
 levelset = calc_level(density,n_level=n_level)
 
 meshB = mesh()
