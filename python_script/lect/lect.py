@@ -53,7 +53,7 @@ def calc_level(density,n_level=10):
     result = np.digitize(density,bins)
     return result
 
-def triangulation(radius,n_grid,levelset,n_level,cutoff=1,calc_heat=False,seperate_off_file=True,filename="output"):
+def triangulation(radius,n_grid,levelset,n_level,cutoff=1,calc_heat=False,seperate_off_file=True,mutant="WT",frame=0):
     if calc_heat:
         heat = []
         colors = cm.rainbow(np.linspace(0,1,n_level))
@@ -89,9 +89,9 @@ def triangulation(radius,n_grid,levelset,n_level,cutoff=1,calc_heat=False,sepera
             meshB.faces = np.array(meshB.faces)
             if calc_heat:
                 heat = np.array(heat)
-                meshB.write_off_file_heat(heat=heat,filename=filename+"_%d_heat.off"%i)
+                meshB.write_off_file_heat(heat=heat,filename="mesh/%s_%d/%s_frame%d.off"%(mutant,i,mutant,frame))
             else:
-                meshB.write_off_file(filename=filename+"_%d.off"%i)
+                meshB.write_off_file(filename="mesh/%s_%d/%s_frame%d.off"%(mutant,i,mutant,frame))
     if not seperate_off_file:
         meshB.faces = np.array(meshB.faces)
     if calc_heat:
