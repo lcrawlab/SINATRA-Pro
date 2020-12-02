@@ -17,35 +17,36 @@ def calc_density_grid(density,dx,dy,dz,n_grid,alpha=1.0,lmbda=1.0):
                 density[i,j,k] += alpha/(dx[i]*dx[i]+dy[j]*dy[j]+dz[k]*dz[k]+lmbda)
     return
 
-def calc_density(meshA,radius=1.0,n_grid=11,alpha=1.0,lmbda=1.0):
-    p = np.linspace(-radius,radius,n_grid)
-    density = np.zeros((n_grid,n_grid,n_grid),dtype=float) 
-    for i in range(meshA.n_vertex):
-        x = meshA.vertices[i]
-        dx = x[0]-p
-        dy = x[1]-p
-        dz = x[2]-p
-        calc_density_grid(density,dx,dy,dz,n_grid)
-    return density
+## calc_density_restriction allows a boolean matrix input that specific which grid to calculate
+## e.g. grid point in the sphere = TRUE, grid point outside the sphere = FALSE
+@jit(nopython=True)
+def calc_density_restriction(density,calc_this,dx,dy,dz,n_grid,alpha=1.0,lmbda=1.0):
+    for i in range(n_grid):
+        for j in range(n_grid):
+            for k in range(n_grid):
+                if calc_this[i,j,k]:
+                    density[i,j,k] += alpha/(dx[i]*dx[i]+dy[j]*dy[j]+dz[k]*dz[k]+lmbda)
+    return
 
-'''
-def calc_density_new(meshA,radius=1.0,n_grid=11,alpha=1.0,lmbda=1.0):
+## Density calculation by summing contribution from all atoms in the protein
+def calc_density(meshA,radius=1.0,n_grid=11,alpha=1.0,lmbda=1.0,calc_this=[],restriction=False):
     p = np.linspace(-radius,radius,n_grid)
-    density = np.zeros((n_grid,n_grid,n_grid),dtype=float) 
-    for i in range(meshA.n_vertex):
-        x = meshA.vertices[i]
-        dx = x[0]-p
-        dy = x[1]-p
-        dz = x[2]-p
-        dx = dx*dx
-        dy = dy*dy
-        dz = dz*dz
-        dx = np.transpose(np.tile(np.tile(dx,n_grid),n_grid).reshape(n_grid,n_grid,n_grid),(2,1,0))
-        dy = np.transpose(np.tile(np.tile(dy,n_grid),n_grid).reshape(n_grid,n_grid,n_grid),(1,2,0))
-        dz = np.transpose(np.tile(np.tile(dz,n_grid),n_grid).reshape(n_grid,n_grid,n_grid),(0,1,2))
-        density += alpha/(dx+dy+dz+lmbda)
+    density = np.zeros((n_grid,n_grid,n_grid),dtype=float)
+    if restriction:
+        for i in range(meshA.n_vertex):
+            x = meshA.vertices[i]
+            dx = x[0]-p
+            dy = x[1]-p
+            dz = x[2]-p
+            calc_density_restriction(density,calc_this,dx,dy,dz,n_grid,alpha,lmbda)
+    else:
+        for i in range(meshA.n_vertex):
+            x = meshA.vertices[i]
+            dx = x[0]-p
+            dy = x[1]-p
+            dz = x[2]-p
+            calc_density_grid(density,dx,dy,dz,n_grid,alpha,lmbda)
     return density
-'''
 
 def calc_level(density,n_level=10):
     ymax = np.amax(density)
@@ -53,14 +54,14 @@ def calc_level(density,n_level=10):
     result = np.digitize(density,bins)
     return result
 
-def triangulation(radius,n_grid,levelset,n_level,cutoff=1,calc_heat=False,seperate_off_file=True,mutant="WT",frame=0):
+def triangulation(radius,n_grid,levelset,n_level,cutoff=1,n_shapecutoff=5,calc_heat=False,seperate_off_file=True,mutant="WT",frame=0):
     if calc_heat:
         heat = []
         colors = cm.rainbow(np.linspace(0,1,n_level))
         spectrum = np.floor(np.array([to_rgb(a) for a in colors])*255).astype(int)
     x = np.linspace(-radius,radius,n_grid)
     gridsize = x[1]-x[0]
-    shapecutoff = gridsize*5
+    shapecutoff = gridsize*n_shapecutoff
     grid = np.array(np.meshgrid(x,x,x))
     meshB = mesh()
     for i in range(cutoff,n_level):
@@ -89,9 +90,10 @@ def triangulation(radius,n_grid,levelset,n_level,cutoff=1,calc_heat=False,sepera
             meshB.faces = np.array(meshB.faces)
             if calc_heat:
                 heat = np.array(heat)
-                meshB.write_off_file_heat(heat=heat,filename="mesh/%s_%d/%s_frame%d.off"%(mutant,i,mutant,frame))
+                #meshB.write_off_file_heat(heat=heat,filename="mesh/%s_%d/%s_frame%d.off"%(mutant,i,mutant,frame))
             else:
                 meshB.write_off_file(filename="mesh/%s_%d/%s_frame%d.off"%(mutant,i,mutant,frame))
+                #meshB.write_off_file(filename="mesh/%s_%d/%s_%d_frame%d.off"%(mutant,i,mutant,n_shapecutoff,frame))
     if not seperate_off_file:
         meshB.faces = np.array(meshB.faces)
     if calc_heat:
