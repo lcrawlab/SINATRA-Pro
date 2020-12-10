@@ -24,7 +24,9 @@ end = time.perf_counter()
 print(end-begin)
 """
 
-def RATE(X,f_draws=None,pre_specify=False,beta_draws=None,prop_var=1,nullify=None,snp_nms=None,cores=1):
+def RATE(X,f_draws=None,pre_specify=False,beta_draws=None,prop_var=1,nullify=[],snp_nms=None,n_core=1):
+    if n_core == -1:
+        n_core = multiprocessing.cpu_count()
     ### Take the SVD of the Design Matrix for Low Rank Approximation ###
     u, s, vh = np.linalg.svd(X,full_matrices=False,compute_uv=True)
     dx = s > 1e-10
@@ -47,27 +49,34 @@ def RATE(X,f_draws=None,pre_specify=False,beta_draws=None,prop_var=1,nullify=Non
     tmp = 1./np.sqrt(s_Sigma_star[r])*u_Sigma_star[,r].T
     U = np.linalg.pinv(v).T @ tmp.T
     
-    """
-    V = v%*%Sigma_star%*%t(v) #Variances
-    mu = v%*%u%*%colMeans(f.draws) #Effect Size Analogues
+    V = v @ Sigma_star @ v.T #Variances
+    mu = v @ u @ np.means(f_draws,axis=0) #Effect Size Analogues
     ### Create Lambda ###
-    Lambda = tcrossprod(U)
+    Lambda = U @ U.T
       
     ### Compute the Kullback-Leibler divergence (KLD) for Each Predictor ###
-    int = 1:length(mu); l = nullify;
-        
-    if(length(l)>0){int = int[-l]}
-        
-    KLD = foreach(j = int, .combine='c')%dopar%{
-         q = unique(c(j,l))
-         m = abs(mu[q])
-                                  
-    U_Lambda_sub = sherman_r(Lambda,V[,q],V[,q])
-    alpha = t(U_Lambda_sub[-q,q])%*%U_Lambda_sub[-q,-q]%*%U_Lambda_sub[-q,q]
-    kld = (t(m)%*%alpha%*%m)/2
-    names(kld) = snp.nms[j]
-    return kld
-    """
+    
+    for j in range(len(mu)):
+        if j in nullify:
+            continue
+        q = np.unique(np.concatenate(j,nullify))
+        m = np.fabs(mu[q])     
+        U_Lambda_sub = woodbury(Lambda,V[,q],V[,q])
+        alpha = U_Lambda_sub[-q,q].T @ U_Lambda_sub[-q,-q] @ U_Lambda_sub[-q,q]
+        kld = (m.T @ alpha @ m) * .5
+    
+    ### Compute the corresponding “RelATive cEntrality” (RATE) measure ###
+    RATE = KLD/np.sum(KLD)
+
+    ### Find the entropic deviation from a uniform distribution ###
+    Delta = np.sum(RATE*np.log((len(mu)-len(nullify))*RATE))
+
+    ### Calibrate Delta via the effective sample size (ESS) measures from importance sampling ###
+    #(Gruber and West, 2016, 2017)
+    ESS = 1./(1.+Delta)*100.
+
+    ### Return a list of the values and results ###
+    return KLD, RATE, Delta, ESS
 
 #X = np.loadtxt('../../ubq/WT/restrained_all/tda/dect_D_A_0_4_15_01_8_50_norm.txt')
 
