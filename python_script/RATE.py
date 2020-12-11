@@ -33,7 +33,7 @@ def RATE(X,f_draws=None,pre_specify=False,beta_draws=None,prop_var=1,nullify=[],
     s_sq = s**2
     px = np.cumsum(s_sq/np.sum(s_sq)) < prop_var
     r_X = np.logical_and(dx,px)
-    u = 1./s[r_X]*u[:,r_X]
+    u = 1. / s[r_X] * u[:,r_X]
     v = vh.T[:,r_X]
     
     # Now, calculate Sigma_star
@@ -46,7 +46,7 @@ def RATE(X,f_draws=None,pre_specify=False,beta_draws=None,prop_var=1,nullify=[],
     u_Sigma_star, s_Sigma_star, vh_Sigma_star = np.linalg.svd(Sigma_star,full_matrices=False,compute_uv=True)
     r = s_Sigma_star > 1e-10
     
-    tmp = 1./np.sqrt(s_Sigma_star[r])*u_Sigma_star[,r].T
+    tmp = 1./np.sqrt(s_Sigma_star[r]) @ u_Sigma_star[:,r].T
     U = np.linalg.pinv(v).T @ tmp.T
     
     V = v @ Sigma_star @ v.T #Variances
@@ -55,28 +55,29 @@ def RATE(X,f_draws=None,pre_specify=False,beta_draws=None,prop_var=1,nullify=[],
     Lambda = U @ U.T
       
     ### Compute the Kullback-Leibler divergence (KLD) for Each Predictor ###
-    
-    for j in range(len(mu)):
-        if j in nullify:
+    kld = np.zeros(mu.size,dtype=float)
+    for i in range(mu.size):
+        if i in nullify:
             continue
-        q = np.unique(np.concatenate(j,nullify))
+        q = np.unique(np.concatenate(i,nullify))
         m = np.fabs(mu[q])     
-        U_Lambda_sub = woodbury(Lambda,V[,q],V[,q])
-        alpha = U_Lambda_sub[-q,q].T @ U_Lambda_sub[-q,-q] @ U_Lambda_sub[-q,q]
-        kld = (m.T @ alpha @ m) * .5
+        U_Lambda_sub = woodbury(Lambda,V[:,q],V[:,q])
+        U_no_q = np.delete(U_Lambda_sub,0,q)
+        U_no_qq = np.delete(U_no_q,1,q)
+        alpha = U_not_q.T @ U_no_qq @ U_no_q
+        kld[i] = (m.T @ alpha @ m) * .5
     
     ### Compute the corresponding “RelATive cEntrality” (RATE) measure ###
-    RATE = KLD/np.sum(KLD)
+    rates = kld/np.sum(kld)
 
     ### Find the entropic deviation from a uniform distribution ###
-    Delta = np.sum(RATE*np.log((len(mu)-len(nullify))*RATE))
+    delta = np.sum(RATE*np.log((len(mu)-len(nullify))*RATE))
 
     ### Calibrate Delta via the effective sample size (ESS) measures from importance sampling ###
     #(Gruber and West, 2016, 2017)
-    ESS = 1./(1.+Delta)*100.
+    eff_samp_size = 1./(1.+Delta)*100.
 
     ### Return a list of the values and results ###
-    return KLD, RATE, Delta, ESS
+    return kld, rates, delta, eff_samp_size
 
-#X = np.loadtxt('../../ubq/WT/restrained_all/tda/dect_D_A_0_4_15_01_8_50_norm.txt')
 

@@ -5,6 +5,7 @@ from scipy.special import expit
 from scipy.integrate import trapz
 from numpy.linalg import cholesky, solve
 from scipy.stats import norm
+from RATE import *
 
 #from numba import jit
 #@jit(nopython=True,parallel=True)
@@ -22,7 +23,7 @@ def probit_log_likelihood(latent_variables, class_labels):
 
 # Binary Laplace Apprxoimation classifier
 # RW algorithm 3.1
-def LaplaceApproximation(K,y,step_size=1.0):
+def Laplace_Approximation(K,y,step_size=1.0):
     n = len(y)
     f = np.zeros(n,dtype=float)
     oldobj = 1e99
@@ -58,8 +59,9 @@ def CovarianceFunction(K,sigma_n,X,y,xs,sigma=1.0):
         kx[i] = np.exp(-np.mean((X[i]-xs)**2)*bandwidth)
         fx += alpha[i]*kx[i]
     return fx, kx
-    
-def LaplaceApproximationPrediction(f,sigma_n,X,y,K,xs):
+
+""" 
+def Laplace_Approximation_Prediction(f,sigma_n,X,y,K,xs):
     n = len(y)
     sigf = expit(f)
     W = np.diag(sigf*(1-sigf))
@@ -73,8 +75,9 @@ def LaplaceApproximationPrediction(f,sigma_n,X,y,K,xs):
     z = np.linspace(fs-sigma*5,fs+sigma*5,201)
     predict_prob = trapz(expit(z)*norm.pdf(z,fs))/len(z)
     return predict_prob
+"""
 
-def ExpectationPropagation(K,y):
+def Expectation_Propagation(K,y):
     n = len(y)
     mu = np.zeros(n,dtype=float)
     nu_tilde = np.zeros(n,dtype=float)
@@ -121,55 +124,51 @@ def log_likelihood(f,y):
     return np.sum(-(f*y)**2)-log_sqrt_2pi*len(f)
 
 ## Adopted from FastGP::ess
-def EllipticalSliceSampling(K,y,N_mcmc=1e5,probit=TRUE):
+def Elliptical_Slice_Sampling(K,y,N_mcmc=10000,probit=True):
     print("Running elliptical slice sampling...")
     if probit:
         log_lik = probit_log_likelihood
     else:
         log_lik = logistic_log_likelihood
     n = K.shape[0]
-    N = len(y)
+    N = y.size
     burn_in = 1000
-    mcmc_samples = np.zeros((burn_in+N_mcmc,N),dtype=int)
-    norm_samples = np.random.multivariate_normal(mean = np.zeros(n), cov = K, size = burn_in+N_mcmc).T
+    mcmc_samples = np.zeros((burn_in+N_mcmc,N),dtype=float)
+    norm_samples = np.random.multivariate_normal(mean = np.zeros(n), cov = K, size = burn_in+N_mcmc)
     unif_samples = np.random.uniform(low = 0, high = 1, size = burn_in+N_mcmc)
-    theta = np.random_uniform(low = 0, high = 2*np.pi, size = burn_in+N_mcmc)
+    theta = np.random.uniform(low = 0, high = 2*np.pi, size = burn_in+N_mcmc)
     theta_min = theta - 2*np.pi
     theta_max = theta + 2*np.pi
     for i in range(1,burn_in+N_mcmc):
         f = mcmc_samples[i-1,:]
-        llh_thresh = log_lik(f,Y) + np.log(unif_samples[i])
-        f_star = f*np.cos(theta[i])+norm_samples[i,:]*np.sin(theta[i])
-        while(log_lik(f_star,Y) < llh_thresh):
+        llh_thresh = log_lik(f,y) + np.log(unif_samples[i])
+        f_star = f * np.cos(theta[i]) + norm_samples[i,:] * np.sin(theta[i])
+        while(log_lik(f_star,y) < llh_thresh):
             if theta[i] < 0:
                 theta_min[i] = theta[i]
             else:
                 theta_max[i] = theta[i]
             theta[i] = np.random.uniform(low = theta_min[i],high = theta_max[i], size = 1)
-            f_star = f*np.cose(theta[i]) + norm_samples[i,:] * np.sin(theta[i])
+            f_star = f * np.cos(theta[i]) + norm_samples[i,:] * np.sin(theta[i])
         mcmc_samples[i,:] = f_star
-    return mcmc_samples[(burn_in):(burn_in+N_mcmc),:]
+    return mcmc_samples[burn_in:,:]
 
-def find_rate_variables_with_other_sampling_methods(gp_data,bandwidth = 0.01,type = 'Laplace'):
-    n = gp_data.shape[0]
-    X = gp_data[:,1:]
-    y = gp_data[:,0]
+def find_rate_variables_with_other_sampling_methods(X,y,bandwidth = 0.01,sampling_method = 'Laplace'):
+    n = X.shape[0]
     h = bandwidth
-    # RATE
     f = np.zeros(n)
     Kn = CovarianceMatrix(X.T,bandwidth)
     np.fill_diagonal(Kn,1)
-    if type == 'Laplace':
-        mu, sigma = LaplaceApproximation(Kn,y)
+    if sampling_method == 'Laplace':
+        mu, sigma = Laplace_Approximation(Kn,y)
         samples = numpy.random.multivariate_normal(mean=mu,cov=sigma,size=10000).T 
-    elif type == 'EP':
-        mu, sigma = ExpectationPropagation(Kn,y)
+    elif sampling_method == 'EP':
+        mu, sigma = Expectation_Propagation(Kn,y)
         samples = numpy.random.multivariate_normal(mean=mu,cov=sigma,size=10000).T 
-    elif type == 'ESS':
+    elif sampling_method == 'ESS':
         samples = Elliptical_Slice_Sampling(Kn,y)
     else:
-        return 
+        return
     rates = RATE(X=X,f_draws=samples)
     return rates
-    
-        
+ 
