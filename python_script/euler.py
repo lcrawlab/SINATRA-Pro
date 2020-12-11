@@ -1,6 +1,8 @@
 #!/bin/python3
 
 import numpy as np
+import multiprocessing
+from joblib import Parallel, delayed
 
 #' Computes the EC curve on a ball
 #'
@@ -54,4 +56,11 @@ def compute_ec_curve(mesh, directions, n_filtration = 25, ball_radius = 1.0, ec_
         eulers[i] = compute_ec_curve_single(mesh,directions[i],radius,n_filtration,ec_type,include_faces)
     return radius, eulers
 
-
+def compute_ec_curve_parallel(mesh, directions, n_filtration = 25, ball_radius = 1.0, ec_type = "ECT", include_faces = True, n_core = -1):
+    radius = np.linspace(-ball_radius,ball_radius,n_filtration)
+    parameter = (n_filtration,ball_radius,ec_type,include_faces)
+    if n_core == -1:    
+        n_core = multiprocessing.cpu_count()
+    processed_list = Parallel(n_jobs=n_core)(delayed(compute_ec_curve_single)(mesh,direction,radius,*parameter) for direction in directions)
+    processed_list = np.array(processed_list)
+    return radius, processed_list
