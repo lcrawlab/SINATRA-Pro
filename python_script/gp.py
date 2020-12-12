@@ -1,6 +1,6 @@
 #!/bin/python3
 
-import numpy as np
+import numpy as np, sys
 from scipy.special import expit
 from scipy.integrate import trapz
 from numpy.linalg import cholesky, solve
@@ -13,6 +13,7 @@ def CovarianceMatrix(x,bandwidth=0.01):
     n = x.shape[1]
     K = np.zeros((n,n),dtype=float)
     for i in range(n):
+        K[i,i] = 1
         for j in range(i+1,n):
             K[i,j] = np.exp(-np.mean((x[:,i]-x[:,j])**2)*bandwidth)
             K[j,i] = K[i,j]
@@ -124,7 +125,7 @@ def log_likelihood(f,y):
     return np.sum(-(f*y)**2)-log_sqrt_2pi*len(f)
 
 ## Adopted from FastGP::ess
-def Elliptical_Slice_Sampling(K,y,N_mcmc=10000,probit=True):
+def Elliptical_Slice_Sampling(K,y,N_mcmc=10000,burn_in=1000,probit=True):
     print("Running elliptical slice sampling...")
     if probit:
         log_lik = probit_log_likelihood
@@ -132,7 +133,6 @@ def Elliptical_Slice_Sampling(K,y,N_mcmc=10000,probit=True):
         log_lik = logistic_log_likelihood
     n = K.shape[0]
     N = y.size
-    burn_in = 1000
     mcmc_samples = np.zeros((burn_in+N_mcmc,N),dtype=float)
     norm_samples = np.random.multivariate_normal(mean = np.zeros(n), cov = K, size = burn_in+N_mcmc)
     unif_samples = np.random.uniform(low = 0, high = 1, size = burn_in+N_mcmc)
@@ -140,6 +140,11 @@ def Elliptical_Slice_Sampling(K,y,N_mcmc=10000,probit=True):
     theta_min = theta - 2*np.pi
     theta_max = theta + 2*np.pi
     for i in range(1,burn_in+N_mcmc):
+        if i < burn_in:
+            sys.stdout.write('Burning in...\r')
+        else:
+            sys.stdout.write('Elliptical slice sampling Step %d...\r'%(i-burn_in))
+        sys.stdout.flush()
         f = mcmc_samples[i-1,:]
         llh_thresh = log_lik(f,y) + np.log(unif_samples[i])
         f_star = f * np.cos(theta[i]) + norm_samples[i,:] * np.sin(theta[i])
@@ -155,10 +160,9 @@ def Elliptical_Slice_Sampling(K,y,N_mcmc=10000,probit=True):
 
 def find_rate_variables_with_other_sampling_methods(X,y,bandwidth = 0.01,sampling_method = 'Laplace'):
     n = X.shape[0]
-    h = bandwidth
     f = np.zeros(n)
+    print('Calculating Covariance Matrix...')
     Kn = CovarianceMatrix(X.T,bandwidth)
-    np.fill_diagonal(Kn,1)
     if sampling_method == 'Laplace':
         mu, sigma = Laplace_Approximation(Kn,y)
         samples = numpy.random.multivariate_normal(mean=mu,cov=sigma,size=10000).T 
@@ -169,6 +173,6 @@ def find_rate_variables_with_other_sampling_methods(X,y,bandwidth = 0.01,samplin
         samples = Elliptical_Slice_Sampling(Kn,y)
     else:
         return
-    rates = RATE(X=X,f_draws=samples)
-    return rates
+    kld, rates, delta, eff_samp_size = RATE(X=X,f_draws=samples)
+    return kld, rates, delta, eff_samp_size
  
