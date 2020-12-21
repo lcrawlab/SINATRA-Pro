@@ -125,7 +125,7 @@ def log_likelihood(f,y):
     return np.sum(-(f*y)**2)-log_sqrt_2pi*len(f)
 
 ## Adopted from FastGP::ess
-def Elliptical_Slice_Sampling(K,y,N_mcmc=10000,burn_in=1000,probit=True):
+def Elliptical_Slice_Sampling(K,y,N_mcmc=100000,burn_in=1000,probit=True):
     print("Running elliptical slice sampling...")
     if probit:
         log_lik = probit_log_likelihood
@@ -143,7 +143,7 @@ def Elliptical_Slice_Sampling(K,y,N_mcmc=10000,burn_in=1000,probit=True):
         if i < burn_in:
             sys.stdout.write('Burning in...\r')
         else:
-            sys.stdout.write('Elliptical slice sampling Step %d...\r'%(i-burn_in))
+            sys.stdout.write('Elliptical slice sampling Step %d...\r'%(i-burn_in+1))
         sys.stdout.flush()
         f = mcmc_samples[i-1,:]
         llh_thresh = log_lik(f,y) + np.log(unif_samples[i])
@@ -156,6 +156,7 @@ def Elliptical_Slice_Sampling(K,y,N_mcmc=10000,burn_in=1000,probit=True):
             theta[i] = np.random.uniform(low = theta_min[i],high = theta_max[i], size = 1)
             f_star = f * np.cos(theta[i]) + norm_samples[i,:] * np.sin(theta[i])
         mcmc_samples[i,:] = f_star
+    sys.stdout.write('\n')
     return mcmc_samples[burn_in:,:]
 
 def find_rate_variables_with_other_sampling_methods(X,y,bandwidth = 0.01,sampling_method = 'Laplace'):
