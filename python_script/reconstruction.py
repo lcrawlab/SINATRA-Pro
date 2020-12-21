@@ -122,3 +122,56 @@ def reconstruct_from_lasso(meshA, directions, lasso_weights, n_cuts = 10, n_filt
     return vert_matrix
 
 
+def project_rate_on_nonvacuum(rates,not_vacuum):
+    rates_new = np.zeros(not_vacuum.size,dtype=float)
+    j = 0
+    for i in range(not_vacuum.size):
+        if not_vacuum[i]:
+            rates_new[i] = rates[j]
+            j += 1
+    return rates_new
+
+
+def reconstruct_on_multiple_mesh(protA, protB, directions, rates, not_vacuum, n_sample = 101, directions = 4, n_filtration = 25, ball_radius = 1.0, directory_mesh = None, sm_radius = 4.0, parallel = False, n_core = -1):
+    rates = project_rate_on_nonvacuum(rates,not_vacuum)
+    if directory_mesh == None:
+        directory_mesh = "%s_%s/mesh/%s"(protA,protB,protA)
+        meshProtein = mesh()
+        meshProtein.read_mesh_file(filename='%s/%s_%.1f/%s_frame0.msh'%(directory_mesh,protA,sm_radius,protA))
+        out_prob = np.zeros((nframe,meshProtein.vertices.shape[0]),dtype=float)
+        for i in range(nframe):
+            frame = 100*i
+            sys.stdout.write('Reconstructing for Frame %d...\r'%frame)
+            sys.stdout.flush()
+            meshProtein = mesh()
+            meshProtein.read_mesh_file(filename='%s/%s_%.1f/%s_frame%d.msh'%(directory_mesh,protA,sm_radius,protA,frame))
+            out_prob[i,:] = reconstruct_by_sorted_threshold_new(meshProtein, directions, pip, n_filtration = nf, n_direction_per_cone = 4, ball_radius = 1.0, by_rank = False)
+        average_prob = np.average(out_prob,axis=0)
+        np.savetxt('%s_%s/vert_prob_rate.txt'%(protA,protB),average_prob)
+    else:
+        out_prob = []
+        for filename in os.listdir(directory_mesh):
+            if filename.endswith(".msh"):
+                sys.stdout.write('Reconstructing for mesh %s...\r'%filename)
+                sys.stdout.flush()
+                meshProtein = mesh()
+                meshProtein.read_mesh_file(filename=filename)
+                prob = reconstruct_by_sorted_threshold_new(meshProtein, directions, pip, n_filtration = nf, n_direction_per_cone = 4, ball_radius = 1.0, by_rank = False)
+                out_prob.append(prob)
+        out_prob = np.array(out_prob)
+        average_prob = np.average(out_prob,axis=0)
+        np.savetxt("vert_prob_rate.txt",average_prob)
+    return average_prob
+
+def write_vert_prob_on_pdb(vert_prob, pdb_in_file, pdb_out_file, selection = "protein"):
+    u = mda.Universe(pdb_file)
+    protein = u.select_atoms(selection)
+    u.add_TopologyAttr('tempfactors')
+    ymin = np.amin(vert_prob)
+    ymax = np.amax(vert_prob)
+    y = (vert_prob - ymin)/(ymax-ymin)*100
+    protein.tempfactors = y
+    protein.write(pdb_out_file)
+    return
+
+

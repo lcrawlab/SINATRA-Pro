@@ -9,7 +9,6 @@ def DataCorrelation(X1,X2):
     for i in range(n):
         for j in range(m):
             cor[i,j] = np.correlate(X1[i],X2[j])
-            #cor[i,j] = np.corrcoef(X1[i],X2[j])
     return cor
 
 def DirectionCorrelation(X,n_direction):

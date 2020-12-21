@@ -40,9 +40,7 @@ def compute_selected_vertices_cones(directions,mesh,rate_vals,length=100,thresho
     return total_selected_vertices
 
 #### Heatmap Code ####
-
-def reconstruct_vertices_on_shape(directions,mesh,rate_vals,length,cuts,cone_size,ball_radius,ball=True,radius=0):
-    
+def reconstruct_vertices_on_shape(directions,mesh,rate_vals,length,cuts,cone_size,ball_radius,ball=True,radius=0): 
     return
 
 

@@ -207,6 +207,7 @@ class mesh:
                     if i_f < self.n_face:
                         for i in range(int(p[0])):
                             self.faces[i_f][i] = int(p[i+1])
+                        i_f += 1
                 n_line += 1
         return
 
