@@ -11,23 +11,19 @@ def sherman_r(A, u, v):
     x = v.T @ A @ u + 1
     return A - ((A @ u) @ (v.T @ A)) * (1./x)
 
-def RATE(X,f_draws=None,pre_specify=False,beta_draws=None,prop_var=1,snp_nms=None,low_rank=False,n_core=1): #,nullify=[],
+def RATE(X,f_draws=None,pre_specify=False,beta_draws=None,prop_var=1,snp_nms=None,low_rank=False):
     
     sys.stdout.write("Calculating RATE...\n")
 
-    #if n_core == -1:
-    #    n_core = multiprocessing.cpu_count()
-
-    ### Take the SVD of the Design Matrix for Low Rank Approximation ###
-    u, s, vh = np.linalg.svd(X,full_matrices=False,compute_uv=True)
-    dx = s > 1e-10
-    s_sq = s**2
-    px = np.cumsum(s_sq/np.sum(s_sq)) < prop_var
-    r_X = np.logical_and(dx,px)
-    u = ((1. / s[r_X]) * u[:,r_X]).T
-    v = vh.T[:,r_X]
-
-    if low_rank: 
+    if low_rank:
+        ### Take the SVD of the Design Matrix for Low Rank Approximation ###
+        u, s, vh = np.linalg.svd(X,full_matrices=False,compute_uv=True)
+        dx = s > 1e-10
+        s_sq = s**2
+        px = np.cumsum(s_sq/np.sum(s_sq)) < prop_var
+        r_X = np.logical_and(dx,px)
+        u = ((1. / s[r_X]) * u[:,r_X]).T
+        v = vh.T[:,r_X]
         # Now, calculate Sigma_star
         SigmaFhat = np.cov(f_draws, rowvar=False)
         Sigma_star = u @ SigmaFhat @ u.T 
