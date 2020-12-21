@@ -140,7 +140,7 @@ def convert_pdb_mesh(protA, protB, nsample = 101, radius = 4.0, directory_pdb_A 
         for directory_pdb in [directory_pdb_A,directory_pdb_B]:
             for filename in os.listdir(directory_pdb):
                 if filename.endswith(".pdb"):
-                    trajwhole = mda.Universe(filename).select_atoms('protein and not type H')
+                    trajwhole = mda.Universe(directory_pdb + '/' + filename).select_atoms('protein and not type H')
                     comp = ComplexFiltration()
                     comp.vertices = trajwhole.positions
                     r.append(np.amax(np.linalg.norm(comp.vertices,axis=1)))
@@ -167,7 +167,7 @@ def convert_pdb_mesh(protA, protB, nsample = 101, radius = 4.0, directory_pdb_A 
     else:
         for prot, directory_pdb in zip([protA,protB],[directory_pdb_A,directory_pdb_B]):
             for filename in os.listdir(directory_pdb):
-                trajwhole = mda.Universe(filename.select_atoms('protein and not type H')
+                trajwhole = mda.Universe(directory_pdb + '/' + filename).select_atoms('protein and not type H')
                 sys.stdout.write('Constructing topology for %s for %s...\r'%(prot,filename))
                 sys.stdout.flush()
                 comp = ComplexFiltration()

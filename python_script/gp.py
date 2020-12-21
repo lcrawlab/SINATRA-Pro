@@ -10,6 +10,7 @@ from RATE import *
 #from numba import jit
 #@jit(nopython=True,parallel=True)
 def CovarianceMatrix(x,bandwidth=0.01):
+    bandwidth = 1./(2*bandwidth**2)
     n = x.shape[1]
     K = np.zeros((n,n),dtype=float)
     for i in range(n):
@@ -159,7 +160,7 @@ def Elliptical_Slice_Sampling(K,y,N_mcmc=100000,burn_in=1000,probit=True):
     sys.stdout.write('\n')
     return mcmc_samples[burn_in:,:]
 
-def find_rate_variables_with_other_sampling_methods(X,y,bandwidth = 0.01,sampling_method = 'Laplace'):
+def find_rate_variables_with_other_sampling_methods(X,y,bandwidth = 0.01,sampling_method = 'Laplace'):        
     n = X.shape[0]
     f = np.zeros(n)
     print('Calculating Covariance Matrix...')

@@ -1,9 +1,9 @@
 #!/bin/python3
 
 import numpy as np, sys
-import time
-import multiprocessing
-from joblib import Parallel, delayed
+#import time
+#import multiprocessing
+#from joblib import Parallel, delayed
 from scipy.linalg import pinv
 
 # Sherman-Morrison
@@ -11,22 +11,15 @@ def sherman_r(A, u, v):
     x = v.T @ A @ u + 1
     return A - ((A @ u) @ (v.T @ A)) * (1./x)
 
-#A = np.loadtxt("data/Lambda.dat")
-#V = np.loadtxt("data/V.dat")
-#print(A.shape,V.shape)
-#print(sherman_r(A,V[:,0],V[:,0].T))
-#exit()
-
-def RATE(X,f_draws=None,pre_specify=False,beta_draws=None,prop_var=1,snp_nms=None,n_core=1,low_rank = False): #,nullify=[],
+def RATE(X,f_draws=None,pre_specify=False,beta_draws=None,prop_var=1,snp_nms=None,low_rank=False,n_core=1): #,nullify=[],
     
     sys.stdout.write("Calculating RATE...\n")
 
-    if n_core == -1:
-        n_core = multiprocessing.cpu_count()
+    #if n_core == -1:
+    #    n_core = multiprocessing.cpu_count()
 
     ### Take the SVD of the Design Matrix for Low Rank Approximation ###
     u, s, vh = np.linalg.svd(X,full_matrices=False,compute_uv=True)
-
     dx = s > 1e-10
     s_sq = s**2
     px = np.cumsum(s_sq/np.sum(s_sq)) < prop_var
