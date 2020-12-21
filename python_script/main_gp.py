@@ -16,7 +16,7 @@ y = np.zeros(N,dtype=int)
 y[:int(N/2)].fill(-1)
 y[int(N/2):].fill(1)
 
-kld, rates, delta, eff_samp_size = find_rate_variables_with_other_sampling_methods(x,y,bandwidth=0.01,sampling_method="ESS")
+#kld, rates, delta, eff_samp_size = find_rate_variables_with_other_sampling_methods(x,y,bandwidth=0.01,sampling_method="ESS")
 
 #Kn = CovarianceMatrix(x.T,bandwidth=0.01)
 #print(Kn)
@@ -27,7 +27,7 @@ kld, rates, delta, eff_samp_size = find_rate_variables_with_other_sampling_metho
 #samples = np.loadtxt('ess_samples.dat')
 #np.save('ess_samples.npy',samples)
 
-#samples = np.load('data/ess_samples.npy')
+samples = np.load('data/ess_samples.npy')
 #mean = np.mean(samples,axis=0)
 #std = np.std(samples,axis=0)
 #plt.plot(range(len(mean)),mean,color="blue",label="Python")
@@ -47,9 +47,9 @@ kld, rates, delta, eff_samp_size = find_rate_variables_with_other_sampling_metho
 #plt.legend()
 #plt.show()
 
-#kld, rates, delta, eff_samp_size = RATE(x,f_draws=samples,low_rank=False)
-np.savetxt('data/rates_python.txt',rates)
-np.savetxt('data/kld_python.txt',kld)
+kld, rates, delta, eff_samp_size = RATE(x,f_draws=samples,low_rank=False)
+#np.savetxt('data/rates_python.txt',rates)
+#np.savetxt('data/kld_python.txt',kld)
 
 #print(kld,rates,delta,eff_samp_size)
 

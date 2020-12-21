@@ -81,15 +81,15 @@ def generate_equidistributed_points(desired_number, N, hemisphere=False):
 # @param directions_per_cone (int): The number of directions we want generated within each cone.
 # 
 # @return directions (num_directions*directions_per_cone x 3 matrix): A matrix of equidistributed cones.
-def generate_equidistributed_cones(n_cone, cap_radius = 0.1, directions_per_cone = 1, hemisphere=False):
-    sphere = generate_equidistributed_points(n_directions, n_directions, hemisphere)
+def generate_equidistributed_cones(n_cone, cap_radius = 0.1, n_direction_per_cone = 1, hemisphere=False):
+    sphere = generate_equidistributed_points(n_cone, n_cone, hemisphere)
     directions = []
     for i in range(n_cone):
         directions.append(sphere[i]/np.linalg.norm(sphere[i]))
-        if directions_per_cone > 1:
-            for direction in rodrigues(sphere[i],cap_radius,directions_per_cone-1):
+        if n_direction_per_cone > 1:
+            for direction in rodrigues(sphere[i],cap_radius,n_direction_per_cone-1):
                 direction /= np.linalg.norm(direction)
                 directions.append(direction)
-    return directions
+    return np.array(directions)
 
 

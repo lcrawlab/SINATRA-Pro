@@ -32,7 +32,7 @@ def convert_traj_pdb_aligned(protA, protB, struct_file_A, traj_file_A, struct_fi
         pass
 
     refu = mda.Universe(struct_file_A,traj_file_A)
-    refu.trajectory[0]
+    refu.trajectory[-1]
     if selection == None:
         refuCA = refu.select_atoms('name CA')
     else:
@@ -47,7 +47,7 @@ def convert_traj_pdb_aligned(protA, protB, struct_file_A, traj_file_A, struct_fi
             pass
 
         u = mda.Universe(struct_file,traj_file)
-        u.trajectory[0]
+        u.trajectory[-1]
         if selection == None:
             refuCA = refu.select_atoms('name CA')
         else:
@@ -63,20 +63,21 @@ def convert_traj_pdb_aligned(protA, protB, struct_file_A, traj_file_A, struct_fi
 
         CA = u.select_atoms('name CA and %s'%selection)
         if selection == None:
-            noh = u.select_atoms('protein and not type H')
+            noh = u.select_atoms('protein')
         else:
-            noh = u.select_atoms('protein and not type H and %s'%selection)
+            noh = u.select_atoms('protein and %s'%selection)
 
         rmsds = []
         t = []
         nframe = len(u.trajectory)
-        nskip =  int(nframe/nsample)
+        nskip =  int(nframe/(nsample-1))
         
         frame = 0
         i_sample = 0
         for ts in u.trajectory:
             if frame % nskip == 0:
-                print(ts.time) 
+                sys.stdout.write("Writing pdb files for %s, t = %.1f\r"%(prot,ts.time))
+                sys.stdout.flush()
                 traj0 = CA.positions - CA.center_of_mass()
                 R, rmsdval = align.rotation_matrix(traj0, ref0)
                 noh.translate(-CA.center_of_mass())
@@ -84,7 +85,7 @@ def convert_traj_pdb_aligned(protA, protB, struct_file_A, traj_file_A, struct_fi
                 noh.write('%s/pdb/%s/%s_frame%d.pdb'%(directory,prot,prot,i_sample))
                 i_sample += 1
             frame += 1
-
+        sys.stdout.write("\n")
     return
 
 ####
@@ -99,40 +100,32 @@ def convert_traj_pdb_aligned(protA, protB, struct_file_A, traj_file_A, struct_fi
 # directory_mesh = directory for the input pdb files, default = protA_protB/mesh/ if not specified
 ####
 
-def convert_pdb_mesh(protA, protB, nsample = 101, radius = 4.0, directory_pdb_A = None, directory_pdb_B = None, directory_mesh = None):
+def convert_pdb_mesh(protA, protB, n_sample = 101, radius = 4.0, directory_pdb_A = None, directory_pdb_B = None, directory_mesh = None):
     
     if directory_pdb_A == None or directory_pdb_B == None:
         directory = "%s_%s"%(protA,protB)
-        try:
+        if not os.path.exists(directory):
             os.mkdir(directory)
-        except FileExistsError:
-            pass 
-        try:
-            os.mkdir("%s/mesh"%directory)
-        except FileExistsError:
-            pass
         directory_mesh = "%s/mesh"%directory
+        if not os.path.exists(directory_mesh):
+            os.mkdir(directory_mesh)
     else:
         if directory_mesh == None:
             directory = '.' 
             directory_mesh = "mesh"
-            try:
+            if not os.path.exists("mesh"):
                 os.mkdir("mesh")
-            except FileExistsError:
-                pass
         else:
-            try:
+            if not os.path.exists(directory_mesh):
                 os.mkdir(directory_mesh)
-            except FileExistsError:
-                pass
 
 
     r = []
     sys.stdout.write('Calculating sphere radius...\n')
     if directory_pdb_A == None or directory_pdb_B == None:
         for prot in [protA, protB]:
-            for i_sample in range(nsample):
-                trajwhole = mda.Universe('%s/pdb/%s/%s_frame%d.pdb'%(directory,prot,prot,i_sample)).select_atoms('protein and not type H')
+            for i_sample in range(n_sample):
+                trajwhole = mda.Universe('%s/pdb/%s/%s_frame%d.pdb'%(directory,prot,prot,i_sample)).select_atoms('protein')
                 comp = ComplexFiltration()
                 comp.vertices = trajwhole.positions
                 r.append(np.amax(np.linalg.norm(comp.vertices,axis=1)))
@@ -140,7 +133,7 @@ def convert_pdb_mesh(protA, protB, nsample = 101, radius = 4.0, directory_pdb_A 
         for directory_pdb in [directory_pdb_A,directory_pdb_B]:
             for filename in os.listdir(directory_pdb):
                 if filename.endswith(".pdb"):
-                    trajwhole = mda.Universe(directory_pdb + '/' + filename).select_atoms('protein and not type H')
+                    trajwhole = mda.Universe(directory_pdb + '/' + filename).select_atoms('protein')
                     comp = ComplexFiltration()
                     comp.vertices = trajwhole.positions
                     r.append(np.amax(np.linalg.norm(comp.vertices,axis=1)))
@@ -149,12 +142,10 @@ def convert_pdb_mesh(protA, protB, nsample = 101, radius = 4.0, directory_pdb_A 
     sys.stdout.write('Rmax = %.3f\n'%rmax)
     if directory_pdb_A == None or directory_pdb_B == None:
         for prot in [protA, protB]:
-            try:
-                os.mkdir("%s/mesh/%s_%.1f/"%(directory,prot,radius)
-            except FileExistsError:
-                pass
-            for i_sample in range(nsample): 
-                trajwhole = mda.Universe('%s/pdb/%s/%s_frame%d.pdb'%(directory,prot,prot,i_sample)).select_atoms('protein and not type H')
+            if not os.path.exists("%s/mesh/%s_%.1f/"%(directory,prot,radius)):
+                os.mkdir("%s/mesh/%s_%.1f/"%(directory,prot,radius))
+            for i_sample in range(n_sample): 
+                trajwhole = mda.Universe('%s/pdb/%s/%s_frame%d.pdb'%(directory,prot,prot,i_sample)).select_atoms('protein')
                 sys.stdout.write('Constructing topology for %s for Frame %d...\r'%(prot,i_sample))
                 sys.stdout.flush()
                 comp = ComplexFiltration()
@@ -162,12 +153,13 @@ def convert_pdb_mesh(protA, protB, nsample = 101, radius = 4.0, directory_pdb_A 
                 comp.calc_distance_matrix()
                 edges, distances = comp.get_edge_list(radius=radius)
                 faces = comp.edge_to_face_list(edges=edges)
-                comp.vertices /= rmaxi
+                comp.vertices /= rmax
                 comp.write_mesh_file(edges=edges,faces=faces,filename='%s/%s_%.1f/%s_frame%d.msh'%(directory_mesh,prot,radius,prot,i_sample))
+            sys.stdout.write('\n')
     else:
         for prot, directory_pdb in zip([protA,protB],[directory_pdb_A,directory_pdb_B]):
             for filename in os.listdir(directory_pdb):
-                trajwhole = mda.Universe(directory_pdb + '/' + filename).select_atoms('protein and not type H')
+                trajwhole = mda.Universe(directory_pdb + '/' + filename).select_atoms('protein')
                 sys.stdout.write('Constructing topology for %s for %s...\r'%(prot,filename))
                 sys.stdout.flush()
                 comp = ComplexFiltration()
@@ -177,5 +169,5 @@ def convert_pdb_mesh(protA, protB, nsample = 101, radius = 4.0, directory_pdb_A 
                 faces = comp.edge_to_face_list(edges=edges)
                 comp.vertices /= rmax
                 comp.write_mesh_file(edges=edges,faces=faces,filename='%s/%s_%.1f/%s.msh'%(directory_mesh,prot,radius,filename[:-4]))
-        
+            sys.stdout.write('\n') 
     return
