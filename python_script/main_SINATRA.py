@@ -10,14 +10,14 @@ protB = "R164S"
 nsample = 101
 
 ## Input files
-struct_file_A = 'data/%s/md_0_1.gro'%protA
-traj_file_A = 'data/%s/md_0_1_noPBC.xtc'%protA
+struct_file_A = '../%s/md_0_1.gro'%protA
+traj_file_A = '../%s/md_0_1_noPBC.xtc'%protA
 
-struct_file_B = 'data/%s/md_0_1.gro'%protB
-traj_file_B = 'data/%s/md_0_1_noPBC.xtc'%protB
+struct_file_B = '../%s/md_0_1.gro'%protB
+traj_file_B = '../%s/md_0_1_noPBC.xtc'%protB
 
 ## Simplicies construction parameters
-selection = 'resid 65:213'
+selection = 'resid 65:230'
 sm_radius = 4.0
 
 ## Filtration directions parameters
@@ -37,17 +37,19 @@ bandwidth = 0.01
 sampling_method = "ESS"
 
 ## Read trajectory file and output aligned protein structures in pdb format
-convert_traj_pdb_aligned(protA, protB, struct_file_A = struct_file_A, traj_file_A = traj_file_A, struct_file_B = struct_file_B, traj_file_B = traj_file_B, nsample = 101,selection=selection)
+#convert_traj_pdb_aligned(protA, protB, struct_file_A = struct_file_A, traj_file_A = traj_file_A, struct_file_B = struct_file_B, traj_file_B = traj_file_B, align_frame = 0, nsample = 101,selection = selection)
 
 ## Converted protein structures into simplicial mesehes
-convert_pdb_mesh(protA,protB, n_sample = n_sample, radius = sm_radius)
+convert_pdb_mesh(protA,protB, n_sample = n_sample, sm_radius = sm_radius, parallel = True, n_core = 4)
 
 ## Calculate distributed cones of directions for EC calculations
 directions = generate_equidistributed_cones(n_cone=n_cone,n_direction_per_cone=n_direction_per_cone,cap_radius=cap_radius,hemisphere=False)
-#np.savetxt("WT_R164S/directions_4_15_0.1.txt",directions)
+np.savetxt("WT_R164S/directions_4_15_0.1.txt",directions)
 
+directions = np.loadtxt("WT_R164S/directions_4_15_0.1.txt")
 ## EC calculations to convert simplicial meshes to topological summary statistics
 X, y, not_vacuum = compute_ec_curve_folder(protA,protB,directions,n_sample=n_sample,ec_type=ec_type,n_cone=n_cone,n_direction_per_cone=n_direction_per_cone,cap_radius=cap_radius,n_filtration=n_filtration,sm_radius=sm_radius,parallel=parallel,n_core=n_core)
+
 #X = np.loadtxt("WT_R164S/DECT_WT_R164S_15_4_0.1_25_norm.txt")
 #not_vacuum = np.loadtxt("WT_R164S/notvacuum_DECT_WT_R164S_15_4_0.1_25_norm.txt")
 #y = np.loadtxt('WT_R164S/WT_R164S_label.txt')
