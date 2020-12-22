@@ -170,4 +170,5 @@ class ComplexFiltration:
         self.vertices /= rmax
         return
 
-
+    def calc_radius(self):
+        return np.amax(np.linalg.norm(self.vertices,axis=1))
