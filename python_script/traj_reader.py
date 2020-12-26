@@ -44,7 +44,7 @@ def convert_traj_pdb_aligned(protA, protB, struct_file_A, traj_file_A, struct_fi
         u = mda.Universe(struct_file,traj_file)
         u.trajectory[align_frame]
         if selection == None:
-            refuCA = refu.select_atoms('name CA')
+            refCA = refu.select_atoms('name CA')
         else:
             refCA = u.select_atoms('name CA and %s'%selection)
 
@@ -56,10 +56,11 @@ def convert_traj_pdb_aligned(protA, protB, struct_file_A, traj_file_A, struct_fi
         refCA.rotate(R)
         ref0 = refCA.positions
 
-        CA = u.select_atoms('name CA and %s'%selection)
         if selection == None:
+            CA = u.select_atoms('name CA')
             atoms = u.select_atoms('protein')
         else:
+            CA = u.select_atoms('name CA and %s'%selection)
             atoms = u.select_atoms('protein and %s'%selection)
 
         rmsds = []
@@ -182,6 +183,7 @@ def convert_pdb_mesh(protA, protB, n_sample = 101, sm_radius = 4.0, directory_pd
 
     rmax = np.amax(r)
     sys.stdout.write('Rmax = %.3f\n'%rmax)
+    
     if directory_pdb_A == None or directory_pdb_B == None:
         for prot in [protA, protB]:
             directory_mesh = "%s/mesh/%s_%.1f/"%(directory,prot,sm_radius)
