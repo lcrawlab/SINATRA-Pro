@@ -159,7 +159,7 @@ def reconstruct_on_multiple_mesh(protA, protB, directions, rates, not_vacuum, n_
                 sys.stdout.write('Reconstructing for mesh %s...\r'%filename)
                 sys.stdout.flush()
                 meshProtein = mesh()
-                meshProtein.read_mesh_file(filename=filename)
+                meshProtein.read_mesh_file(filename=directory_mesh + '/' + filename)
                 prob = reconstruct_by_sorted_threshold_new(meshProtein, directions, rates, n_filtration = n_filtration, n_direction_per_cone = n_direction_per_cone, ball_radius = ball_radius, by_rank = False)
                 out_prob.append(prob)
         out_prob = np.array(out_prob)

@@ -2,8 +2,6 @@
 
 import numpy as np, sys
 #import time
-#import multiprocessing
-#from joblib import Parallel, delayed
 from scipy.linalg import pinv
 
 # Sherman-Morrison
@@ -11,9 +9,26 @@ def sherman_r(A, u, v):
     x = v.T @ A @ u + 1
     return A - ((A @ u) @ (v.T @ A)) * (1./x)
 
-def RATE(X,f_draws=None,pre_specify=False,beta_draws=None,prop_var=1,snp_nms=None,low_rank=False):
+def calc_kld(mu,Lambda,V,q):
+    sys.stdout.write("Calculating KLD(%d)...\r"%q)
+    sys.stdout.flush()
+    U_Lambda_sub = sherman_r(Lambda,V[:,q],V[:,q].T)
+    U_no_q = np.delete(U_Lambda_sub,q,0)
+    U_no_qq = np.delete(U_no_q,q,1)
+    alpha = U_no_q[:,q].T @ U_no_qq @ U_no_q[:,q]
+    kld = mu[q]**2 * alpha * .5
+    return kld
+
+
+def RATE(X,f_draws=None,pre_specify=False,beta_draws=None,prop_var=1,snp_nms=None,low_rank=False,parallel=False,n_core=-1):
     
     sys.stdout.write("Calculating RATE...\n")
+
+    if parallel:
+        import multiprocessing
+        from joblib import Parallel, delayed
+        if n_core == -1:
+            n_core = multiprocessing.cpu_count()
 
     if low_rank:
         ### Take the SVD of the Design Matrix for Low Rank Approximation ###
@@ -49,15 +64,13 @@ def RATE(X,f_draws=None,pre_specify=False,beta_draws=None,prop_var=1,snp_nms=Non
     Lambda = U @ U.T
 
     ### Compute the Kullback-Leibler divergence (KLD) for Each Predictor ###
-    kld = np.zeros(mu.size,dtype=float)
-    for q in range(mu.size):
-        sys.stdout.write("Calculating KLD(%d)...\r"%q)
-        sys.stdout.flush()
-        U_Lambda_sub = sherman_r(Lambda,V[:,q],V[:,q].T)
-        U_no_q = np.delete(U_Lambda_sub,q,0)
-        U_no_qq = np.delete(U_no_q,q,1)
-        alpha = U_no_q[:,q].T @ U_no_qq @ U_no_q[:,q]
-        kld[q] = mu[q]**2 * alpha * .5
+    if parallel:
+        kld = Parallel(n_jobs=n_core)(delayed(calc_kld)(mu,Lambda,V,q) for q in range(mu.size))     
+        kld = np.array(kld)
+    else:
+        kld = np.zeros(mu.size,dtype=float)
+        for q in range(mu.size):
+            kld[q] = calc_kld(mu,Lambda,V,q)
     
     sys.stdout.write("\n")
     sys.stdout.write("KLD calculation Completed.\n")
