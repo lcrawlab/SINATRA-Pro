@@ -129,10 +129,9 @@ def compute_ec_curve_folder(protA, protB, directions, n_sample = 101, ec_type = 
                     ecs.append(ec.flatten())
             ecs = np.array(ecs)
             if include_faces:
-                outfile = '%s_%s_%d_%d_%.1f_%d_%d.txt'%(ec_type,prot,n_cone,n_direction_per_cone,cap_radius,n_filtration)
+                outfile = '%s_%s_%d_%d_%.1f_%d.txt'%(ec_type,prot,n_cone,n_direction_per_cone,cap_radius,n_filtration)
             else:
-                outfile = '%s_%s_%d_%d_%.1f_%d_%d_nofaces.txt'%(ec_type,prot,n_cone,n_direction_per_cone,cap_radius,n_filtration)
-
+                outfile = '%s_%s_%d_%d_%.1f_%d_nofaces.txt'%(ec_type,prot,n_cone,n_direction_per_cone,cap_radius,n_filtration)
             np.savetxt(outfile,ecs,fmt='%.3f')
             outfiles.append(outfile)
 
@@ -154,17 +153,17 @@ def compute_ec_curve_folder(protA, protB, directions, n_sample = 101, ec_type = 
     data = np.subtract(data,mean)
     data = np.divide(data,std)
     
-    normec_file = '%s/%s_%s_%s_%d_%d_%.1f_%d_norm.txt'%(directory,ec_type,protA,protB,n_cone,n_direction_per_cone,cap_radius,n_filtration)
-    notvacuum_file = '%s/notvacuum_%s_%s_%s_%d_%d_%.1f_%d_norm.txt'%(directory,ec_type,protA,protB,n_cone,n_direction_per_cone,cap_radius,n_filtration)
-    np.savetxt(normec_file,data)
-    np.savetxt(notvacuum_file,not_vacuum,fmt="%d")
+    #normec_file = '%s/%s_%s_%s_%d_%d_%.1f_%d_norm.txt'%(directory,ec_type,protA,protB,n_cone,n_direction_per_cone,cap_radius,n_filtration)
+    #notvacuum_file = '%s/notvacuum_%s_%s_%s_%d_%d_%.1f_%d_norm.txt'%(directory,ec_type,protA,protB,n_cone,n_direction_per_cone,cap_radius,n_filtration)
+    #np.savetxt(normec_file,data)
+    #np.savetxt(notvacuum_file,not_vacuum,fmt="%d")
      
     n_A = data_A.shape[0]
     n_B = data_B.shape[0]
     label = np.zeros(n_A+n_B,dtype=int)
     label[:n_A].fill(-1)
     label[n_A:].fill(1)
-    np.savetxt('%s/%s_%s_label.txt'%(directory,protA,protB),label)
+    #np.savetxt('%s/%s_%s_label.txt'%(directory,protA,protB),label)
 
     return data, label, not_vacuum
 

@@ -16,7 +16,7 @@ y = np.zeros(N,dtype=int)
 y[:int(N/2)].fill(-1)
 y[int(N/2):].fill(1)
 
-#kld, rates, delta, eff_samp_size = find_rate_variables_with_other_sampling_methods(x,y,bandwidth=0.01,sampling_method="ESS")
+#kld, rates, delta, eff_samp_size = find_rate_variables_with_other_sampling_methods(x,y,bandwidth=0.01,sampling_method="ESS", parallel = True, n_core = 4)
 
 #Kn = CovarianceMatrix(x.T,bandwidth=0.01)
 #print(Kn)
@@ -47,7 +47,7 @@ samples = np.load('data/ess_samples.npy')
 #plt.legend()
 #plt.show()
 
-kld, rates, delta, eff_samp_size = RATE(x,f_draws=samples,low_rank=False)
+kld, rates, delta, eff_samp_size = RATE(x,f_draws=samples,low_rank=False,parallel=True,n_core=4)
 #np.savetxt('data/rates_python.txt',rates)
 #np.savetxt('data/kld_python.txt',kld)
 

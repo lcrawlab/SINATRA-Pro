@@ -13,23 +13,19 @@ from simplices_construction import *
 # protB = name of protein B
 # struct_file = protein structure file e.g. .pdb, .gro, .tpr, .pqr
 # traj_file = MD trajectory file e.g. .xtc, .dcd, .trj
-# nsample = # of sample structure drawn from trajecotry at even time interval
+# n_sample = # of sample structure drawn from trajecotry at even time interval
 # directory = directory to store all the files
 ####
 
-def convert_traj_pdb_aligned(protA, protB, struct_file_A, traj_file_A, struct_file_B, traj_file_B, align_frame = -1, nsample = 101, selection = None, directory = None):
+def convert_traj_pdb_aligned(protA, protB, struct_file_A, traj_file_A, struct_file_B, traj_file_B, align_frame = 0, n_sample = 100, selection = None, directory = None, offset = 0):
     if directory == None:
         directory = "%s_%s"%(protA,protB)
 
-    try:
+    if not os.path.exists(directory):
         os.mkdir(directory)
-    except FileExistsError:
-        pass
     
-    try:
+    if not os.path.exists("%s/pdb"%directory):
         os.mkdir("%s/pdb"%directory)
-    except FileExistsError:
-        pass
 
     refu = mda.Universe(struct_file_A,traj_file_A)
     refu.trajectory[align_frame]
@@ -41,10 +37,9 @@ def convert_traj_pdb_aligned(protA, protB, struct_file_A, traj_file_A, struct_fi
     refu0 = refuCA.positions - com_refuCA
 
     for prot, struct_file, traj_file in zip([protA,protB],[struct_file_A,struct_file_B],[traj_file_A,traj_file_B]):
-        try:
-            os.mkdir("%s/pdb/%s"%(directory,prot))
-        except FileExistsError:
-            pass
+        directory_pdb = "%s/pdb/%s_offset_%d"%(directory,prot,offset)
+        if not os.path.exists(directory_pdb):
+            os.mkdir(directory_pdb)
 
         u = mda.Universe(struct_file,traj_file)
         u.trajectory[align_frame]
@@ -63,27 +58,29 @@ def convert_traj_pdb_aligned(protA, protB, struct_file_A, traj_file_A, struct_fi
 
         CA = u.select_atoms('name CA and %s'%selection)
         if selection == None:
-            noh = u.select_atoms('protein')
+            atoms = u.select_atoms('protein')
         else:
-            noh = u.select_atoms('protein and %s'%selection)
+            atoms = u.select_atoms('protein and %s'%selection)
 
         rmsds = []
         t = []
         nframe = len(u.trajectory)
-        nskip =  int(nframe/(nsample-1))
+        nskip =  int(nframe/n_sample)
         
         frame = 0
         i_sample = 0
         for ts in u.trajectory:
-            if frame % nskip == 0:
+            if (frame-offset) % nskip == 0:
                 sys.stdout.write("Writing pdb files for %s, t = %.1f\r"%(prot,ts.time))
                 sys.stdout.flush()
                 traj0 = CA.positions - CA.center_of_mass()
                 R, rmsdval = align.rotation_matrix(traj0, ref0)
-                noh.translate(-CA.center_of_mass())
-                noh.rotate(R)
-                noh.write('%s/pdb/%s/%s_frame%d.pdb'%(directory,prot,prot,i_sample))
+                atoms.translate(-CA.center_of_mass())
+                atoms.rotate(R)
+                atoms.write('%s/%s_frame%d.pdb'%(directory_pdb,prot,i_sample))
                 i_sample += 1
+                if i_sample == n_sample:
+                    break
             frame += 1
         sys.stdout.write("\n")
     return
@@ -93,7 +90,7 @@ def convert_traj_pdb_aligned(protA, protB, struct_file_A, traj_file_A, struct_fi
 # 
 # protA = name of protein A
 # protB = name of protein B 
-# nsample = # of sample structure drawn from trajecotry at even time interval
+# n_sample = # of sample structure drawn from trajecotry at even time interval
 # radius = cutoff radius for constructing simplicial meshes
 # directory_pdb_A = directory for the input pdb files, default = protA_protB/pdb/protA if not specified
 # directory_pdb_B = directory for the input pdb files, default = protA_protB/pdb/protB if not specified
@@ -119,7 +116,7 @@ def convert_pdb_mesh_single(sm_radius, rmax, directory = None, prot = None , i_s
         msh_file = '%s/%s_frame%d.msh'%(directory_mesh,prot,i_sample)
         sys.stdout.write('Constructing topology for %s for Frame %d...\r'%(prot,i_sample))
         sys.stdout.flush()
-    if directory_pdb != None and filename != None and prot != None:
+    if directory_mesh != None and directory_pdb != None and filename != None and prot != None:
         pdb_file = directory_pdb + '/' + filename
         msh_file = '%s/%s.msh'%(directory_mesh,filename[:-4])
         sys.stdout.write('Constructing topology for %s for %s...\r'%(prot,filename))
@@ -199,7 +196,7 @@ def convert_pdb_mesh(protA, protB, n_sample = 101, sm_radius = 4.0, directory_pd
     else:
         for prot, directory_pdb in zip([protA,protB],[directory_pdb_A,directory_pdb_B]):
             directory_mesh_prot = '%s/%s_%.1f'%(directory_mesh,prot,sm_radius)
-            if not os.path.exists(directory_mesh_plot):
+            if not os.path.exists(directory_mesh_prot):
                 os.mkdir(directory_mesh_prot)
             if parallel:
                 tmp = Parallel(n_jobs=n_core)(delayed(convert_pdb_mesh_single)(sm_radius=sm_radius,rmax=rmax,directory_pdb=directory_pdb,filename=filename,directory_mesh=directory_mesh_prot,prot=prot,selection='protein') for filename in os.listdir(directory_pdb))
@@ -209,4 +206,64 @@ def convert_pdb_mesh(protA, protB, n_sample = 101, sm_radius = 4.0, directory_pd
             sys.stdout.write('\n') 
     return
 
+def convert_traj_pdb_single_offset(prot, struct_file, traj_file, align_frame = 0, n_sample = 100, offset = 0, selection = None, directory = None):
+    if directory == None:
+        directory = "%s"%prot
+
+    if not os.path.exists(directory):
+        os.mkdir(directory)
+    
+    if not os.path.exists("%s/pdb"%directory):
+        os.mkdir("%s/pdb"%directory)
+
+    refu = mda.Universe(struct_file,traj_file)
+    refu.trajectory[align_frame]
+    if selection == None:
+        refuCA = refu.select_atoms('name CA')
+    else:
+        refuCA = refu.select_atoms('name CA and %s'%selection)
+    com_refuCA = refuCA.center_of_mass()
+    refu0 = refuCA.positions - com_refuCA
+
+    directory_pdb = "%s/pdb/offset_%d"%(directory,offset)
+    if not os.path.exists(directory_pdb):
+        os.mkdir(directory_pdb)
+
+    u = mda.Universe(struct_file,traj_file)
+    u.trajectory[align_frame]
+    if selection == None:
+        refuCA = refu.select_atoms('name CA')
+    else:
+        refCA = u.select_atoms('name CA and %s'%selection)
+
+    ref0 = refCA.positions
+
+    CA = u.select_atoms('name CA and %s'%selection)
+    if selection == None:
+        atoms = u.select_atoms('protein')
+    else:
+        atoms = u.select_atoms('protein and %s'%selection)
+
+    rmsds = []
+    t = []
+    nframe = len(u.trajectory)
+    nskip =  int(nframe/n_sample)
+    
+    frame = 0
+    i_sample = 0
+    for ts in u.trajectory:
+        if (frame - offset) % nskip == 0:
+            sys.stdout.write("Writing pdb files for %s, offset = %d, t = %.1f\r"%(prot,offset,ts.time))
+            sys.stdout.flush()
+            traj0 = CA.positions - CA.center_of_mass()
+            R, rmsdval = align.rotation_matrix(traj0, ref0)
+            atoms.translate(-CA.center_of_mass())
+            atoms.rotate(R)
+            atoms.write('%s/%s_frame%d.pdb'%(directory_pdb,prot,i_sample))
+            i_sample += 1
+            if i_sample == n_sample:
+                break
+        frame += 1
+    sys.stdout.write("\n")
+    return
 
