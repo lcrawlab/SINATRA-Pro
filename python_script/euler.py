@@ -89,7 +89,8 @@ def compute_ec_curve_folder(protA, protB, directions, n_sample = 101, ec_type = 
         if not os.path.exists(directory_mesh_B):
             os.mkdir(directory_mesh_B)
 
-        outfiles = []
+        #outfiles = []
+        ecss = []
         for prot, directory_mesh in zip([protA,protB],[directory_mesh_A,directory_mesh_B]):
             ecs = []
             for i_sample in range(n_sample):
@@ -103,17 +104,20 @@ def compute_ec_curve_folder(protA, protB, directions, n_sample = 101, ec_type = 
                     t, ec = compute_ec_curve(meshProtein, directions, n_filtration = n_filtration, ball_radius = ball_radius,ec_type = ec_type, include_faces = include_faces)
                 ecs.append(ec.flatten())
             ecs = np.array(ecs)
+            ecss.append(ecs)
+            """
             if include_faces:
-                outfile = '%s/%s_%s_%d_%d_%.1f_%d.txt'%(directory,ec_type,prot,n_cone,n_direction_per_cone,cap_radius,n_filtration)
+                outfile = '%s/%s_%s_%d_%d_%.2f_%d.txt'%(directory,ec_type,prot,n_cone,n_direction_per_cone,cap_radius,n_filtration)
             else:
-                outfile = '%s/%s_%s_%d_%d_%.1f_%d_nofaces.txt'%(directory,ec_type,prot,n_cone,n_direction_per_cone,cap_radius,n_filtration)
-            
+                outfile = '%s/%s_%s_%d_%d_%.2f_%d_nofaces.txt'%(directory,ec_type,prot,n_cone,n_direction_per_cone,cap_radius,n_filtration)
             np.savetxt(outfile,ecs,fmt='%.3f')
             outfiles.append(outfile)
+            """
 
     else:
         directory = '.'
-        outfiles = []
+        #outfiles = []
+        ecss = []
         for prot, directory_mesh in zip([protA,protB],[directory_mesh_A,directory_mesh_B]):
             ecs = []
             for filename in os.listdir(directory_mesh):
@@ -128,16 +132,19 @@ def compute_ec_curve_folder(protA, protB, directions, n_sample = 101, ec_type = 
                         t, ec = compute_ec_curve(meshProtein, directions, n_filtration = n_filtration, ball_radius = ball_radius,ec_type = ec_type, include_faces = include_faces) 
                     ecs.append(ec.flatten())
             ecs = np.array(ecs)
+            """    
             if include_faces:
-                outfile = '%s_%s_%d_%d_%.1f_%d.txt'%(ec_type,prot,n_cone,n_direction_per_cone,cap_radius,n_filtration)
+                outfile = '%s_%s_%d_%d_%.2f_%d.txt'%(ec_type,prot,n_cone,n_direction_per_cone,cap_radius,n_filtration)
             else:
-                outfile = '%s_%s_%d_%d_%.1f_%d_nofaces.txt'%(ec_type,prot,n_cone,n_direction_per_cone,cap_radius,n_filtration)
+                outfile = '%s_%s_%d_%d_%.2f_%d_nofaces.txt'%(ec_type,prot,n_cone,n_direction_per_cone,cap_radius,n_filtration)
             np.savetxt(outfile,ecs,fmt='%.3f')
             outfiles.append(outfile)
-
-    data_A = np.loadtxt(outfiles[0])
-    data_B = np.loadtxt(outfiles[1])
-
+            """
+            ecss.append(ecs)
+            
+    data_A = ecss[0] #np.loadtxt(outfiles[0])
+    data_B = ecss[1] #np.loadtxt(outfiles[1])
+    
     vacuum = np.ones(data_A.shape[1],dtype=bool)
     for a in data_A:
         vacuum = np.logical_and(vacuum,a == 0)
