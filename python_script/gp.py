@@ -62,6 +62,23 @@ def CovarianceFunction(K,sigma_n,X,y,xs,sigma=1.0):
         fx += alpha[i]*kx[i]
     return fx, kx
 
+""" 
+def Laplace_Approximation_Prediction(f,sigma_n,X,y,K,xs):
+    n = len(y)
+    sigf = expit(f)
+    W = np.diag(sigf*(1-sigf))
+    sqrtW = np.sqrt(W)
+    B = np.identity(n) + sqrtW @ K @ sqrtW
+    L = cholesky(B)
+    fx, kx = CovarianceFunction(K,sigma_n,X,y,xs,1.0)
+    fs = np.dot(kx,(y - sigf))
+    v = solve(L, sqrtW @ kx)
+    sigma = np.dot(kx,kx) - np.dot(v,v)
+    z = np.linspace(fs-sigma*5,fs+sigma*5,201)
+    predict_prob = trapz(expit(z)*norm.pdf(z,fs))/len(z)
+    return predict_prob
+"""
+
 def Expectation_Propagation(K,y):
     n = len(y)
     mu = np.zeros(n,dtype=float)
@@ -145,19 +162,13 @@ def Elliptical_Slice_Sampling(K,y,N_mcmc=100000,burn_in=1000,probit=True,seed=No
     sys.stdout.write('\n')
     return mcmc_samples[burn_in:,:]
 
-def find_rate_variables_with_other_sampling_methods(X,y,bandwidth = 0.01,sampling_method = 'ESS',size = 100000,N_mcmc = 100000,burn_in = 1000,probit = True, seed = None, low_rank = False, parallel = False, n_core = -1, benchmark = False):
-    if benchmark:
-        from time import perf_counter as pc
+from time import perf_counter
+def find_rate_variables_with_other_sampling_methods(X,y,bandwidth = 0.01,sampling_method = 'ESS',size = 100000,N_mcmc = 100000,burn_in = 1000,probit = True,seed = None, parallel = False, n_core = -1, verbose = False):
     n = X.shape[0]
     f = np.zeros(n)
-    sys.stdout.write('Calculating Covariance Matrix...')
-    if benchmark:
-            begin = pc()
+    if verbose:
+        sys.stdout.write('Calculating Covariance Matrix...\n')
     Kn = CovarianceMatrix(X.T,bandwidth)
-    if benchmark:
-        end = pc()
-        tkn = end - begin
-        begin = pc()
     if sampling_method == 'Laplace':
         mu, sigma = Laplace_Approximation(Kn,y)
         samples = numpy.random.multivariate_normal(mean=mu,cov=sigma,size=size).T 
@@ -168,16 +179,6 @@ def find_rate_variables_with_other_sampling_methods(X,y,bandwidth = 0.01,samplin
         samples = Elliptical_Slice_Sampling(Kn,y,N_mcmc=N_mcmc,burn_in=burn_in,probit=probit,seed=seed)
     else:
         return
-    if benchmark:
-        end = pc()
-        tess = end - begin
-        begin = pc()
-    kld, rates, delta, eff_samp_size = RATE(X=X,f_draws=samples,parallel=parallel,n_core=n_core,low_rank=low_rank)
-    if benchmark:
-        end = pc()
-        trate = end - begin
-    if benchmark:
-        return kld, rates, delta, eff_samp_size, tkn, tess, trate
-    else:
-        return kld, rates, delta, eff_samp_size
+    kld, rates, delta, eff_samp_size = RATE(X=X,f_draws=samples,parallel=parallel,n_core=n_core,verbose=verbose)
+    return kld, rates, delta, eff_samp_size
  

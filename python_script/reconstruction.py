@@ -5,7 +5,7 @@ import os, sys
 import numpy as np
 from scipy.special import logsumexp
 
-# Reconstruction
+# Reconstruction algorithms
 
 def reconstruct_by_average(meshA, directions, rates, n_filtration = 25, n_direction_per_cone = 1, ball_radius = 1.0, standardized = True):
     outProb = np.zeros(meshA.vertices.shape[0],dtype=float)
@@ -92,9 +92,6 @@ def reconstruct_by_sorted_threshold_new(meshA, directions, rates, n_filtration =
             vertex_function = np.dot(meshA.vertices,directions[k])
             radius = np.linspace(-ball_radius,ball_radius,n_filtration)
             filtration = np.digitize(vertex_function,radius)-1
-            #bc_digitize = np.bincount(filtration)
-            #bc_hist = np.bincount(((vertex_function-radius[0])/(radius[1]-radius[0])).astype(int))
-            #print(np.allclose(bc_digitize,bc_hist))
             rates_vert[:,i,j] = rates[k*n_filtration+filtration]
     height = np.amax(np.amin(rates_vert[:,:,:],axis=2),axis=1)
     if by_rank:
@@ -136,39 +133,40 @@ def project_rate_on_nonvacuum(rates,not_vacuum):
     return rates_new
 
 
-def reconstruct_on_multiple_mesh(protA, protB, directions, rates, not_vacuum, n_sample = 101, n_direction_per_cone = 4, n_filtration = 25, ball_radius = 1.0, directory_mesh = None, sm_radius = 4.0, parallel = False, n_core = -1):
+def reconstruct_on_multiple_mesh(protA, protB, directions, rates, not_vacuum, n_sample = 101, n_direction_per_cone = 4, n_filtration = 25, ball_radius = 1.0, directory_mesh = None, sm_radius = 4.0, parallel = False, n_core = -1, verbose = False):
     rates = project_rate_on_nonvacuum(rates,not_vacuum)
     if directory_mesh == None:
         directory_mesh = "%s_%s/mesh"%(protA,protB)
         meshProtein = mesh()
         meshProtein.read_mesh_file(filename='%s/%s_%.1f/%s_frame0.msh'%(directory_mesh,protA,sm_radius,protA))
         out_prob = np.zeros((n_sample,meshProtein.vertices.shape[0]),dtype=float)
-        print(meshProtein.vertices.shape[0])
         for frame in range(n_sample):
-            sys.stdout.write('Reconstructing for Frame %d...\r'%frame)
-            sys.stdout.flush()
+            if verbose:
+                sys.stdout.write('Reconstructing for Frame %d...\r'%frame)
+                sys.stdout.flush()
             meshProtein = mesh()
             meshProtein.read_mesh_file(filename='%s/%s_%.1f/%s_frame%d.msh'%(directory_mesh,protA,sm_radius,protA,frame))
             out_prob[frame,:] = reconstruct_by_sorted_threshold_new(meshProtein, directions, rates, n_filtration = n_filtration, n_direction_per_cone = n_direction_per_cone, ball_radius = ball_radius, by_rank = False)
         average_prob = np.average(out_prob,axis=0)
-        np.savetxt('%s_%s/vert_prob_rate.txt'%(protA,protB),average_prob)
     else:
         out_prob = []
         for filename in os.listdir(directory_mesh):
             if filename.endswith(".msh"):
-                sys.stdout.write('Reconstructing for mesh %s...\r'%filename)
-                sys.stdout.flush()
+                if verbose:
+                    sys.stdout.write('Reconstructing for mesh %s...\r'%filename)
+                    sys.stdout.flush()
                 meshProtein = mesh()
                 meshProtein.read_mesh_file(filename=directory_mesh + '/' + filename)
                 prob = reconstruct_by_sorted_threshold_new(meshProtein, directions, rates, n_filtration = n_filtration, n_direction_per_cone = n_direction_per_cone, ball_radius = ball_radius, by_rank = False)
                 out_prob.append(prob)
         out_prob = np.array(out_prob)
         average_prob = np.average(out_prob,axis=0)
-        np.savetxt("vert_prob_rate.txt",average_prob)
     return average_prob
 
 def write_vert_prob_on_pdb(vert_prob, protA = None, protB = None, pdb_in_file = None, pdb_out_file = None, selection = "protein"):
     import MDAnalysis as mda
+    if selection == None:
+        selection = "protein"
     if pdb_in_file == None:
         pdb_in_file = "%s_%s/pdb/%s/%s_frame0.pdb"%(protA,protB,protA,protA)
     if pdb_out_file == None:

@@ -5,16 +5,24 @@ import numpy as np
 from scipy.spatial import distance
 
 # Visualization libraries
-import matplotlib
-from matplotlib import rc
-from matplotlib import pyplot as plt
-from matplotlib.patches import Polygon
-from matplotlib.collections import PatchCollection
+#import matplotlib
+#from matplotlib import rc
+#from matplotlib import pyplot as plt
+#from matplotlib.patches import Polygon
+#from matplotlib.collections import PatchCollection
+
+from MDAnalysis.lib.nsgrid import FastNS, NSResults
+
+import multiprocessing
+from joblib import Parallel, delayed
 
 # distance based filtration
 class ComplexFiltration:
     
     def __init__(self):
+        self.vertices = None
+        self.n_vertices = None
+        self.faces = None
         return
     
     # read positions of vertices from file
@@ -64,50 +72,65 @@ class ComplexFiltration:
         cutoff = np.argmax(self.distance_matrix > radius)
         return self.pairs[:cutoff], self.distance_matrix[:cutoff]
     
+    def neighbor_search(self,cutoff=4.0):
+        max_gridsize = 8000
+        passed = False
+        while not passed:
+            try:
+                nsr = FastNS(cutoff=cutoff,coords=self.vertices,box=self.box,pbc=False,max_gridsize=max_gridsize)
+                passed = True
+            except MemoryError:
+                max_gridsize = int(max_gridsize/2)
+            except:
+                raise
+            if passed:
+                break
+        result = nsr.self_search()
+        self.edges = result.get_pairs()[::2]
+        return 
+    
     # convert edge list to face list
-    def edge_to_face_list(self,edges):
-        connections = [[] for i in range(self.n_vertices)]
-        for edge in edges:
-            connections[edge[0]].append(edge[1])
-            connections[edge[1]].append(edge[0])     
-#        for i in range(self.n_vertices):
-#            connections[i] = np.sort(connections[i])
-        faces = []
-        for i in range(self.n_vertices):
-            for a in connections[i]:
-                if a < i:
-                    continue
-                for b in connections[a]:
-                    if b < a:
-                        continue
-                    elif i in connections[b]:
-                        faces.append([a,b,i])
-        faces = np.array(faces)
-        return faces
+    def edge_to_face_list(self):
+        self.n_vertices = self.vertices.shape[0]
+        self.connections = [set() for i in range(self.n_vertices)]
+        for edge in self.edges:
+            self.connections[edge[0]].add(edge[1])
+            self.connections[edge[1]].add(edge[0])
+        self.faces = []
+        self.checked = set()
+        for u in range(self.n_vertices):
+            self.checked.add(u)
+            for v in self.connections[u] - self.checked:
+                for s in self.connections[u] & self.connections[v]:
+                    if s > v and v > u:
+                        self.faces.append([u,v,s])
+        self.faces = np.array(self.faces)
+        return
     
     # output OFF file for visualization
-    def write_mesh_file(self,edges,faces,filename='output.mesh'):
+    def write_mesh_file(self,filename='output.mesh'):
         with open(filename,'w') as f:
-            f.write('%d %d %d\n'%(self.vertices.shape[0],edges.shape[0],faces.shape[0]))
+            f.write('%d %d %d\n'%(self.vertices.shape[0],self.edges.shape[0],self.faces.shape[0]))
             for vertex in self.vertices:
                 f.write('%.6f %.6f %.6f\n'%(vertex[0],vertex[1],vertex[2]))
-            for edge in edges:
+            for edge in self.edges:
                 f.write('%d %d\n'%(edge[0],edge[1]))
-            for face in faces:
+            for face in self.faces:
                 f.write('%d  %d %d %d  \n'%(len(face),face[0],face[1],face[2]))
         return
    
     # output OFF file for visualization
-    def write_off_file(self,edges,faces,filename='output.off'):
+    def write_off_file(self,filename='output.off'):
         with open(filename,'w') as f:
             f.write('OFF\n')
-            f.write('%d %d %d\n'%(self.vertices.shape[0],faces.shape[0],edges.shape[0]))
+            f.write('%d %d %d\n'%(self.vertices.shape[0],self.faces.shape[0],self.edges.shape[0]))
             for vertex in self.vertices:
                 f.write('%.6f %.6f %.6f\n'%(vertex[0],vertex[1],vertex[2]))
-            for face in faces:
+            for face in self.faces:
                 f.write('%d  %d %d %d  \n'%(len(face),face[0],face[1],face[2]))
         return
-
+    
+    """
     def plot_EC_curve(self,radii=np.linspace(0,1,21),outfile='ec_filtration.pdf'):
         ECs = []
         for radius in radii:
@@ -132,7 +155,7 @@ class ComplexFiltration:
         plt.show()
         plt.close()
         return
-
+    
     def plot_faces_2D(self,edges,faces,radius=1.0,filename='output.pdf'):
 
         fig, ax = plt.subplots()
@@ -164,6 +187,7 @@ class ComplexFiltration:
         plt.show()
         plt.close()
         return
+    """
     
     def normalize(self):
         rmax = np.amax(np.linalg.norm(self.vertices,axis=1))
