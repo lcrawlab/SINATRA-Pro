@@ -57,6 +57,43 @@ class mesh:
             print("There are no mismatch")
         return edges
 
+    '''
+        ##
+        ## Edges are defined as connection between any two points shared by two faces
+        ##
+        borders = []
+        edges = []
+        for face in self.faces:
+            for a in combinations(face,2):
+                m, n = smaller_in_front(a[0],a[1])
+                if [m,n] in borders:
+                    edges.append([m,n])
+                    borders.remove([m,n])
+                else:
+                    borders.append([m,n])
+        ## 
+        ## check if number of edges on the face match the number of vertices (e.g. 3 for a triangle, 4 for a sqaure)
+        ## if the mesh is continuous, there will be no mismatch
+        ##
+        mismatch = False
+        missed_edges = 0
+        for face in self.faces:
+            n_edgeConnected = 0
+            for a in combinations(face,2):
+                m, n = smaller_in_front(a[0],a[1])
+                if [m,n] in edges:
+                    n_edgeConnected += 1
+            if n_edgeConnected != len(face):
+                missed_edges += len(face) - n_edgeConnected
+                mismatch = True
+        edges = np.array(edges)
+        n_edges = edges.shape[0]
+        if mismatch:
+            print("There are mismatch between number of edges and number of edges that connect two faces. The mesh might be unclosed.")
+        else:
+            print("There are no mismatch. The mesh is closed.")
+        return edges
+    '''
 
     def unique_edges(self):
         edges = []

@@ -1,7 +1,6 @@
 #!/bin/python3
 
 import numpy as np, sys
-#import time
 from scipy.linalg import pinv
 
 # Sherman-Morrison
@@ -9,9 +8,10 @@ def sherman_r(A, u, v):
     x = v.T @ A @ u + 1
     return A - ((A @ u) @ (v.T @ A)) * (1./x)
 
-def calc_kld(mu,Lambda,V,q):
-    sys.stdout.write("Calculating KLD(%d)...\r"%q)
-    sys.stdout.flush()
+def calc_kld(mu,Lambda,V,q,verbose=False):
+    if verbose:
+        sys.stdout.write("Calculating KLD(%d)...\r"%q)
+        sys.stdout.flush()
     U_Lambda_sub = sherman_r(Lambda,V[:,q],V[:,q].T)
     U_no_q = np.delete(U_Lambda_sub,q,0)
     U_no_qq = np.delete(U_no_q,q,1)
@@ -20,9 +20,9 @@ def calc_kld(mu,Lambda,V,q):
     return kld
 
 
-def RATE(X,f_draws=None,pre_specify=False,beta_draws=None,prop_var=1,snp_nms=None,low_rank=False,parallel=False,n_core=-1):
-    
-    sys.stdout.write("Calculating RATE...\n")
+def RATE(X,f_draws=None,pre_specify=False,beta_draws=None,prop_var=1,snp_nms=None,low_rank=False,parallel=False,n_core=-1,verbose=False):
+    if verbose:
+        sys.stdout.write("Calculating RATE...\n")
 
     if parallel:
         import multiprocessing
@@ -65,15 +65,15 @@ def RATE(X,f_draws=None,pre_specify=False,beta_draws=None,prop_var=1,snp_nms=Non
 
     ### Compute the Kullback-Leibler divergence (KLD) for Each Predictor ###
     if parallel:
-        kld = Parallel(n_jobs=n_core)(delayed(calc_kld)(mu,Lambda,V,q) for q in range(mu.size))     
+        kld = Parallel(n_jobs=n_core)(delayed(calc_kld)(mu,Lambda,V,q,verbose) for q in range(mu.size))     
         kld = np.array(kld)
     else:
         kld = np.zeros(mu.size,dtype=float)
         for q in range(mu.size):
-            kld[q] = calc_kld(mu,Lambda,V,q)
-    
-    sys.stdout.write("\n")
-    sys.stdout.write("KLD calculation Completed.\n")
+            kld[q] = calc_kld(mu,Lambda,V,q,verbose)
+    if verbose: 
+        sys.stdout.write("\n")
+        sys.stdout.write("KLD calculation Completed.\n")
     
     ### Compute the corresponding “RelATive cEntrality” (RATE) measure ###
     rates = kld/np.sum(kld)
