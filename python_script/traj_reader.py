@@ -3,6 +3,7 @@
 import MDAnalysis as mda
 from MDAnalysis.analysis import align
 from MDAnalysis.analysis.rms import rmsd
+from MDAnalysis.core.groups import AtomGroup
 import numpy as np, os, sys
 from simplices_construction import *
 
@@ -17,7 +18,8 @@ from simplices_construction import *
 # directory = directory to store all the files
 ####
 
-def convert_traj_pdb_aligned(protA, protB, struct_file_A, traj_file_A, struct_file_B, traj_file_B, align_frame = 0, n_sample = 100, selection = None, directory = None, offset = 0):
+def convert_traj_pdb_aligned(protA, protB, struct_file_A, traj_file_A, struct_file_B, traj_file_B, align_frame = 0, n_sample = 100, selection = None, directory = None, offset = 0, align_sequence = False, verbose = False):
+    
     if directory == None:
         directory = "%s_%s"%(protA,protB)
 
@@ -26,42 +28,68 @@ def convert_traj_pdb_aligned(protA, protB, struct_file_A, traj_file_A, struct_fi
     
     if not os.path.exists("%s/pdb"%directory):
         os.mkdir("%s/pdb"%directory)
+    
+    seqselA = []
+    seqselB = []
 
+    if selection == None:
+        selection = 'protein'
+
+    if align_sequence:
+        u_A = mda.Universe(struct_file_A).select_atoms(selection)
+        u_B = mda.Universe(struct_file_B).select_atoms(selection)
+        seq_align = align.sequence_alignment(u_A,u_B)
+        seqA = seq_align[1]
+        seqB = seq_align[0]
+        nres = seq_align[4]
+        for i in range(nres):
+            if seqA[i] != '-' and seqB[i] != '-':
+                seqselA.append(True)
+                seqselB.append(True)
+            elif seqA[i] == '-' and seqB[i] != '-':
+                seqselB.append(False)
+            elif seqB[i] == '-' and seqA[i] != '-':
+                seqselA.append(False)
     refu = mda.Universe(struct_file_A,traj_file_A)
     refu.trajectory[align_frame]
-    if selection == None:
-        refuCA = refu.select_atoms('name CA')
-    else:
-        refuCA = refu.select_atoms('name CA and %s'%selection)
-    com_refuCA = refuCA.center_of_mass()
-    refu0 = refuCA.positions - com_refuCA
 
-    for prot, struct_file, traj_file in zip([protA,protB],[struct_file_A,struct_file_B],[traj_file_A,traj_file_B]):
+    if align_sequence:
+        protein = refu.select_atoms(selection)
+        atoms_A = AtomGroup([],refu)
+        for i, a in enumerate(protein.residues):
+            if seqselA[i]:
+                atoms_A = atoms_A + a.atoms
+        groundref = atoms_A
+        groundrefCA = atoms_A.select_atoms('name CA')
+    else:
+        groundref = refu.select_atoms(selection)
+        groundrefCA = refu.select_atoms('name CA and %s'%selection)
+
+    groundref.translate(-groundrefCA.center_of_mass())
+    
+    for prot, seqsel, struct_file, traj_file in zip([protA,protB],[seqselA,seqselB],[struct_file_A,struct_file_B],[traj_file_A,traj_file_B]):
+                
         directory_pdb = "%s/pdb/%s_offset_%d"%(directory,prot,offset)
         if not os.path.exists(directory_pdb):
             os.mkdir(directory_pdb)
 
         u = mda.Universe(struct_file,traj_file)
         u.trajectory[align_frame]
-        if selection == None:
-            refCA = refu.select_atoms('name CA')
+        
+        if align_sequence:
+            protein = u.select_atoms(selection)
+            atoms = AtomGroup([],u)
+            for i, a in enumerate(protein.residues):
+                if seqsel[i]:
+                    atoms = atoms + a.atoms
+            ref = atoms
         else:
-            refCA = u.select_atoms('name CA and %s'%selection)
+            ref = u.select_atoms(selection)
+        
+        align.alignto(ref, groundref, select="name CA", weights="mass")
 
-        com_refCA = refCA.center_of_mass()
-        ref0 = refCA.positions - com_refCA
-
-        R, rmsdval = align.rotation_matrix(ref0, refu0)
-        refCA.translate(-refCA.center_of_mass())
-        refCA.rotate(R)
-        ref0 = refCA.positions
-
-        if selection == None:
-            CA = u.select_atoms('name CA')
-            atoms = u.select_atoms('protein')
-        else:
-            CA = u.select_atoms('name CA and %s'%selection)
-            atoms = u.select_atoms('protein and %s'%selection)
+        ref.atoms.write(directory_pdb + 'reference_%s.pdb'%prot)
+        ref = mda.Universe(directory_pdb + 'reference_%s.pdb'%prot).atoms
 
         rmsds = []
         t = []
@@ -72,19 +100,27 @@ def convert_traj_pdb_aligned(protA, protB, struct_file_A, traj_file_A, struct_fi
         i_sample = 0
         for ts in u.trajectory:
             if (frame-offset) % nskip == 0:
-                sys.stdout.write("Writing pdb files for %s, t = %.1f\r"%(prot,ts.time))
-                sys.stdout.flush()
-                traj0 = CA.positions - CA.center_of_mass()
-                R, rmsdval = align.rotation_matrix(traj0, ref0)
-                atoms.translate(-CA.center_of_mass())
-                atoms.rotate(R)
-                atoms.write('%s/%s_frame%d.pdb'%(directory_pdb,prot,i_sample))
+                if verbose:
+                    sys.stdout.write("Writing pdb files for %s, t = %.1f\r"%(prot,ts.time))
+                    sys.stdout.flush()
+                protein = u.select_atoms(selection)
+                if align_sequence:
+                    mobile = AtomGroup([],u)
+                    for i, a in enumerate(protein.residues):
+                        if seqsel[i]:
+                            mobile = mobile + a.atoms
+                else:
+                    mobile = protein.atoms
+                align.alignto(mobile,ref,select="name CA",weights="mass")
+                mobile.atoms.write('%s/%s_frame%d.pdb'%(directory_pdb,prot,i_sample))
                 i_sample += 1
                 if i_sample == n_sample:
                     break
             frame += 1
-        sys.stdout.write("\n")
+        if verbose:
+            sys.stdout.write("\n") 
     return
+
 
 ####
 # Convert the aligned protein structures in PDB format (e.g. from "convert_traj_pdb_aligned") to simplicial meshes
@@ -106,34 +142,40 @@ def calc_radius_pdb(selection='protein',directory=None,prot=None,i_sample=None,d
             return None
         else:
             pdb_file = directory_pdb + '/' + filename
-    trajwhole = mda.Universe(pdb_file).select_atoms(selection)
+    protein = mda.Universe(pdb_file).select_atoms(selection)
     comp = ComplexFiltration()
-    comp.vertices = trajwhole.positions
+    comp.vertices = protein.positions
     return comp.calc_radius()
 
-def convert_pdb_mesh_single(sm_radius, rmax, directory = None, prot = None , i_sample = None, directory_mesh = None, directory_pdb = None, filename = None, selection='protein'):
+import MDAnalysis.transformations as trans
+def convert_pdb_mesh_single(sm_radius, rmax, directory = None, prot = None , i_sample = None, directory_mesh = None, directory_pdb = None, filename = None, selection='protein', verbose = False):
     if directory != None and prot != None and i_sample != None and directory_mesh != None:
         pdb_file = '%s/pdb/%s/%s_frame%d.pdb'%(directory,prot,prot,i_sample)
         msh_file = '%s/%s_frame%d.msh'%(directory_mesh,prot,i_sample)
-        sys.stdout.write('Constructing topology for %s for Frame %d...\r'%(prot,i_sample))
-        sys.stdout.flush()
+        if verbose:
+            sys.stdout.write('Constructing topology for %s for Frame %d...\r'%(prot,i_sample))
+            sys.stdout.flush()
     if directory_mesh != None and directory_pdb != None and filename != None and prot != None:
         pdb_file = directory_pdb + '/' + filename
         msh_file = '%s/%s.msh'%(directory_mesh,filename[:-4])
-        sys.stdout.write('Constructing topology for %s for %s...\r'%(prot,filename))
-        sys.stdout.flush()
-    trajwhole = mda.Universe(pdb_file).select_atoms(selection)
+        if verbose:
+            sys.stdout.write('Constructing topology for %s for %s...\r'%(prot,filename))
+            sys.stdout.flush()
+    u = mda.Universe(pdb_file)
+    protein = u.select_atoms(selection)
     comp = ComplexFiltration()
-    comp.vertices = trajwhole.positions
-    comp.calc_distance_matrix()
-    edges, distances = comp.get_edge_list(radius=sm_radius)
-    faces = comp.edge_to_face_list(edges=edges)
+    comp.vertices = protein.positions - np.average(protein.positions,axis=0)
+    comp.box = np.append(np.amax(np.fabs(comp.vertices),axis=0)*2+10.0,[90.0,90.0,90.0])
+    comp.vertices += comp.box[:3]/2
+    comp.neighbor_search(cutoff=4.0)
+    comp.edge_to_face_list()
+    comp.vertices = protein.positions
     comp.vertices /= rmax
-    comp.write_mesh_file(edges=edges,faces=faces,filename=msh_file)
+    comp.write_mesh_file(filename=msh_file)
     return
 
 
-def convert_pdb_mesh(protA, protB, n_sample = 101, sm_radius = 4.0, directory_pdb_A = None, directory_pdb_B = None, directory_mesh = None, parallel = False, n_core = -1):
+def convert_pdb_mesh(protA, protB, n_sample = 101, sm_radius = 4.0, directory_pdb_A = None, directory_pdb_B = None, directory_mesh = None, parallel = False, n_core = -1, verbose = False):
     
     if parallel:
         import multiprocessing
@@ -160,7 +202,8 @@ def convert_pdb_mesh(protA, protB, n_sample = 101, sm_radius = 4.0, directory_pd
 
 
     r = np.array([])
-    sys.stdout.write('Calculating sphere radius...\n')
+    if verbose:
+        sys.stdout.write('Calculating sphere radius...\n')
     if directory_pdb_A == None or directory_pdb_B == None:
         for prot in [protA, protB]:
             if parallel:
@@ -182,7 +225,8 @@ def convert_pdb_mesh(protA, protB, n_sample = 101, sm_radius = 4.0, directory_pd
                         r = np.append(r,r_prot)
 
     rmax = np.amax(r)
-    sys.stdout.write('Rmax = %.3f\n'%rmax)
+    if verbose:
+        sys.stdout.write('Rmax = %.3f\n'%rmax)
     
     if directory_pdb_A == None or directory_pdb_B == None:
         for prot in [protA, protB]:
@@ -190,82 +234,22 @@ def convert_pdb_mesh(protA, protB, n_sample = 101, sm_radius = 4.0, directory_pd
             if not os.path.exists(directory_mesh):
                 os.mkdir(directory_mesh)
             if parallel:
-                tmp = Parallel(n_jobs=n_core)(delayed(convert_pdb_mesh_single)(sm_radius=sm_radius,rmax=rmax,directory=directory,prot=prot,i_sample=i_sample,directory_mesh=directory_mesh,selection='protein') for i_sample in range(n_sample)) 
+                tmp = Parallel(n_jobs=n_core)(delayed(convert_pdb_mesh_single)(sm_radius=sm_radius,rmax=rmax,directory=directory,prot=prot,i_sample=i_sample,directory_mesh=directory_mesh,selection='protein',verbose=verbose) for i_sample in range(n_sample)) 
             else:
                 for i_sample in range(n_sample): 
-                    convert_pdb_mesh_single(sm_radius=sm_radius,rmax=rmax,directory=directory,prot=prot,i_sample=i_sample,directory_mesh=directory_mesh,selection='protein')
-            sys.stdout.write('\n')
+                    convert_pdb_mesh_single(sm_radius=sm_radius,rmax=rmax,directory=directory,prot=prot,i_sample=i_sample,directory_mesh=directory_mesh,selection='protein',verbose=verbose)
     else:
         for prot, directory_pdb in zip([protA,protB],[directory_pdb_A,directory_pdb_B]):
-            directory_mesh_prot = '%s/%s_%.1f'%(directory_mesh,prot,sm_radius)
+            directory_mesh_prot = '%s/%s_%.1f/'%(directory_mesh,prot,sm_radius)
             if not os.path.exists(directory_mesh_prot):
                 os.mkdir(directory_mesh_prot)
             if parallel:
-                tmp = Parallel(n_jobs=n_core)(delayed(convert_pdb_mesh_single)(sm_radius=sm_radius,rmax=rmax,directory_pdb=directory_pdb,filename=filename,directory_mesh=directory_mesh_prot,prot=prot,selection='protein') for filename in os.listdir(directory_pdb))
+                tmp = Parallel(n_jobs=n_core)(delayed(convert_pdb_mesh_single)(sm_radius=sm_radius,rmax=rmax,directory_pdb=directory_pdb,filename=filename,directory_mesh=directory_mesh_prot,prot=prot,selection='protein',verbose=verbose) for filename in os.listdir(directory_pdb))
             else:
                 for filename in os.listdir(directory_pdb):
-                     convert_pdb_mesh_single(sm_radius=sm_radius,rmax=rmax,directory_pdb=directory_pdb,filename=filename,directory_mesh=directory_mesh,prot=prot,selection='protein')
-            sys.stdout.write('\n') 
-    return
+                    convert_pdb_mesh_single(sm_radius=sm_radius,rmax=rmax,directory_pdb=directory_pdb,filename=filename,directory_mesh=directory_mesh_prot,prot=prot,selection='protein',verbose=verbose)
+    if verbose:
+        sys.stdout.write('\n')
 
-def convert_traj_pdb_single_offset(prot, struct_file, traj_file, align_frame = 0, n_sample = 100, offset = 0, selection = None, directory = None):
-    if directory == None:
-        directory = "%s"%prot
-
-    if not os.path.exists(directory):
-        os.mkdir(directory)
-    
-    if not os.path.exists("%s/pdb"%directory):
-        os.mkdir("%s/pdb"%directory)
-
-    refu = mda.Universe(struct_file,traj_file)
-    refu.trajectory[align_frame]
-    if selection == None:
-        refuCA = refu.select_atoms('name CA')
-    else:
-        refuCA = refu.select_atoms('name CA and %s'%selection)
-    com_refuCA = refuCA.center_of_mass()
-    refu0 = refuCA.positions - com_refuCA
-
-    directory_pdb = "%s/pdb/offset_%d"%(directory,offset)
-    if not os.path.exists(directory_pdb):
-        os.mkdir(directory_pdb)
-
-    u = mda.Universe(struct_file,traj_file)
-    u.trajectory[align_frame]
-    if selection == None:
-        refuCA = refu.select_atoms('name CA')
-    else:
-        refCA = u.select_atoms('name CA and %s'%selection)
-
-    ref0 = refCA.positions
-
-    CA = u.select_atoms('name CA and %s'%selection)
-    if selection == None:
-        atoms = u.select_atoms('protein')
-    else:
-        atoms = u.select_atoms('protein and %s'%selection)
-
-    rmsds = []
-    t = []
-    nframe = len(u.trajectory)
-    nskip =  int(nframe/n_sample)
-    
-    frame = 0
-    i_sample = 0
-    for ts in u.trajectory:
-        if (frame - offset) % nskip == 0:
-            sys.stdout.write("Writing pdb files for %s, offset = %d, t = %.1f\r"%(prot,offset,ts.time))
-            sys.stdout.flush()
-            traj0 = CA.positions - CA.center_of_mass()
-            R, rmsdval = align.rotation_matrix(traj0, ref0)
-            atoms.translate(-CA.center_of_mass())
-            atoms.rotate(R)
-            atoms.write('%s/%s_frame%d.pdb'%(directory_pdb,prot,i_sample))
-            i_sample += 1
-            if i_sample == n_sample:
-                break
-        frame += 1
-    sys.stdout.write("\n")
     return
 
