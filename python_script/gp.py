@@ -126,8 +126,9 @@ def log_likelihood(f,y):
     return np.sum(-(f*y)**2)-log_sqrt_2pi*len(f)
 
 ## Adopted from FastGP::ess
-def Elliptical_Slice_Sampling(K,y,N_mcmc=100000,burn_in=1000,probit=True,seed=None):
-    print("Running elliptical slice sampling...")
+def Elliptical_Slice_Sampling(K,y,N_mcmc=100000,burn_in=1000,probit=True,seed=None,verbose=False):
+    if verbose:
+        print("Running elliptical slice sampling...")
     if probit:
         log_lik = probit_log_likelihood
     else:
@@ -143,11 +144,12 @@ def Elliptical_Slice_Sampling(K,y,N_mcmc=100000,burn_in=1000,probit=True,seed=No
     theta_min = theta - 2*np.pi
     theta_max = theta + 2*np.pi
     for i in range(1,burn_in+N_mcmc):
-        if i < burn_in:
-            sys.stdout.write('Burning in...\r')
-        else:
-            sys.stdout.write('Elliptical slice sampling Step %d...\r'%(i-burn_in+1))
-        sys.stdout.flush()
+        if verbose:
+            if i < burn_in:
+                sys.stdout.write('Burning in...\r')
+            else:
+                sys.stdout.write('Elliptical slice sampling Step %d...\r'%(i-burn_in+1))
+            sys.stdout.flush()
         f = mcmc_samples[i-1,:]
         llh_thresh = log_lik(f,y) + np.log(unif_samples[i])
         f_star = f * np.cos(theta[i]) + norm_samples[i,:] * np.sin(theta[i])
@@ -159,7 +161,8 @@ def Elliptical_Slice_Sampling(K,y,N_mcmc=100000,burn_in=1000,probit=True,seed=No
             theta[i] = np.random.uniform(low = theta_min[i],high = theta_max[i], size = 1)
             f_star = f * np.cos(theta[i]) + norm_samples[i,:] * np.sin(theta[i])
         mcmc_samples[i,:] = f_star
-    sys.stdout.write('\n')
+    if verbose:
+        sys.stdout.write('\n')
     return mcmc_samples[burn_in:,:]
 
 from time import perf_counter
@@ -176,7 +179,7 @@ def find_rate_variables_with_other_sampling_methods(X,y,bandwidth = 0.01,samplin
         mu, sigma = Expectation_Propagation(Kn,y)
         samples = numpy.random.multivariate_normal(mean=mu,cov=sigma,size=size).T 
     elif sampling_method == 'ESS':
-        samples = Elliptical_Slice_Sampling(Kn,y,N_mcmc=N_mcmc,burn_in=burn_in,probit=probit,seed=seed)
+        samples = Elliptical_Slice_Sampling(Kn,y,N_mcmc=N_mcmc,burn_in=burn_in,probit=probit,seed=seed,verbose=verbose)
     else:
         return
     kld, rates, delta, eff_samp_size = RATE(X=X,f_draws=samples,parallel=parallel,n_core=n_core,verbose=verbose)
