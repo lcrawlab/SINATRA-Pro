@@ -6,8 +6,14 @@ from gp import *
 from reconstruction import *
 import sys
 
+
+##########################################################################
+
+# Name the variants, just for filename purpose
 protA = "WT"
 protB = "R164S"
+
+# number of structures to draw from trajectory
 n_sample = 1000
 
 ## Input files
@@ -18,8 +24,9 @@ struct_file_B = 'data/%s/md_0_1.gro'%protB
 traj_file_B = 'data/%s/md_0_1_noPBC.xtc'%protB
 
 ## Simplicies construction parameters
+## try using 2.0, 4.0 or 6.0 Angstrom, longer r takes longer computational time, so try smaller first, then larger to see if there are any differences
 selection = 'protein'# and not (resid 164 and not backbone)'
-sm_radius = 2.0 #float(sys.argv[1])
+sm_radius = 2.0      
 
 ## Filtration directions parameters
 n_cone = 20
@@ -29,13 +36,17 @@ cap_radius = 0.80
 ## Euler Characteristics (EC) calculation parameters
 ec_type = "DECT"
 n_filtration = 120
-parallel = True ## using multiple CPU cores for calculation
-n_core = -1 ## Number of cores used for EC calculation
 
 ## Variable selection parameters
 bandwidth = 0.01
 sampling_method = "ESS"
-directory = "%s_%s_whole_2.0"%(protA,protB)
+directory = "WT_R164S_whole"
+
+## Parallelization setting
+parallel = True  ## using multiple CPU cores for calculation
+n_core = -1      ## Number of cores used, -1 = automatically detect and use all cores
+
+##########################################################################
 
 ## Read trajectory file and output aligned protein structures in pdb format
 convert_traj_pdb_aligned(protA, protB, struct_file_A = struct_file_A, traj_file_A = traj_file_A, struct_file_B = struct_file_B, traj_file_B = traj_file_B, align_frame = 0, n_sample = n_sample,selection = selection, offset = 0, directory = directory, single = True)
