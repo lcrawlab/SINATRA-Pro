@@ -66,7 +66,7 @@ def generate_equidistributed_points(desired_number, N, hemisphere=False):
             points.append(point)
     points = np.array(points)
     if points.shape[0] < desired_number:
-        return generate_equidistributed_points(desired_number,N+1)
+        return generate_equidistributed_points(desired_number,N+1,hemisphere)
     else:
         return points
 
