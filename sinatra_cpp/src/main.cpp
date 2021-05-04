@@ -19,10 +19,10 @@ int main ()
 {
     const int number_of_threads = 4;
     omp_set_num_threads(number_of_threads);
-
-    string pdbpath_A = "../pdb/WT_offset_0/";
+    
+    string pdbpath_A = "../../python_script/WT_R164S_65_213/pdb/WT_offset_0/";
     string mshpath_A = "../msh/WT_offset_0/";
-    string pdbpath_B = "../pdb/R164S_offset_0/";
+    string pdbpath_B = "../../python_script/WT_R164S_65_213/pdb/R164S_offset_0/";
     string mshpath_B = "../msh/R164S_offset_0/";
     
     double max_radius = 0.0;
@@ -76,9 +76,10 @@ int main ()
         cout << flush;
     }
     cout << "Mesh Construction Complete.      \n";
-
+    
     vector<vector<double> > directions = generate_equidistributed_cones(10,0.8,4,false);
     cout << directions.size() << " Directions generated\n";
+    
     ofstream ecfile, yfile;
     ecfile.open("DECT_10_4_0.8_60.txt");
     yfile.open("label_WT_R164S.txt");
@@ -86,6 +87,7 @@ int main ()
     //vector<int> label;
     for(int i_frame=0;i_frame<100;i_frame++)
     {
+        cout << "Calculation EC for frame " << i_frame << "..." << '\r';
         mesh meshA;
         string mshfile = mshpath_A + "WT_frame" + to_string(i_frame) + ".msh";
         meshA.read_mesh(mshfile);
@@ -107,6 +109,7 @@ int main ()
     }
     for(int i_frame=0;i_frame<100;i_frame++)
     {
+        cout << "Calculation EC for frame " << i_frame << "..." << '\r';
         mesh meshA;
         string mshfile = mshpath_B + "R164S_frame" + to_string(i_frame) + ".msh";
         meshA.read_mesh(mshfile);
@@ -126,8 +129,10 @@ int main ()
         //ec_matrix.push_back(flattened);
         //label.push_back(1);
     }
+    ecfile.close();
+    yfile.close();
     cout << "EC Calculation Complete.      \n";
-    /*
+     
     dmat X;
     dvec y;
     X.load("DECT_10_4_0.8_60.txt",raw_ascii);
@@ -135,18 +140,34 @@ int main ()
     dvec rates = find_rate_variables_with_other_sampling_methods(X,y);
     rates.save("rates_10_4_0.8_60.txt",raw_ascii);
     
-    vector<vector<double> > directions = generate_equidistributed_cones(10,0.8,4,false);
+    //vector<vector<double> > directions = generate_equidistributed_cones(10,0.8,4,false);
     dvec rates_dvec;
     rates_dvec.load("rates_10_4_0.8_60.txt",raw_ascii);
-    string mshpath_A = "../msh/WT_offset_0/";
-    string mshfile = mshpath_A + "WT_frame0.msh";
-    vector<double> rates_vert = reconstruct_by_sorted_threshold(mshfile,directions,rates_dvec,50,4);
+    vector<double> rates_vert_frames;
+    for(int i_frame=0;i_frame<100;i_frame++)
+    { 
+        string mshpath_A = "../msh/WT_offset_0/";
+        string mshfile = mshpath_A + "WT_frame" + to_string(i_frame) + ".msh";
+        vector<double> rates_vert = reconstruct_by_sorted_threshold(mshfile,directions,rates_dvec,60,4);
+        if (rates_vert_frames.empty())
+            rates_vert_frames = rates_vert;
+        else
+            for(int i=0;i<rates_vert.size();i++)
+                rates_vert_frames[i] += rates_vert[i];
+    }
     ofstream rfile;
-    rfile.open("rates_vert_10_4_0.8_60.txt");
-    for(int i=0;i<rates_vert.size();i++)
-        rfile << rates_vert[i] << '\n';
+    rfile.open("rates_vert.txt");
+    for(int i=0;i<rates_vert_frames.size();i++)
+    {
+        rates_vert_frames[i] /= 100;
+        rfile << rates_vert_frames[i] << '\n';
+    }
     rfile.close();
-    */
+    
+    dvec rates_vert;
+    rates_vert.load("rates_vert.txt");
+    add_rate_pdb(pdbpath_A+"WT_frame0.pdb","rates_vert.pdb",rates_vert);
+   
     return 0;
 }
 
