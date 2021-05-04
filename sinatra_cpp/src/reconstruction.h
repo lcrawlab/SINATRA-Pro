@@ -37,5 +37,50 @@ vector<double> reconstruct_by_sorted_threshold(string mshfile, vector<vector<dou
     return rates_vert;
 }
 
+int add_rate_pdb (string infilename, string outfilename, dvec rates_vert)
+{
+    int n_vert = rates_vert.n_elem;
+    uvec indices = sort_index(rates_vert);
+    vector<double> score_vert(n_vert,0.0);
+    for(int i=0;i<n_vert;i++)
+    {
+        score_vert[indices[i]] = ((double)(n_vert-i)*100.0)/n_vert;
+    }
+    ifstream infile;
+    infile.open(infilename);
+    ofstream outfile;
+    outfile.open(outfilename);
+    string line;
+    if (infile.is_open() and outfile.is_open())
+    {
+        int i_atom = 0;
+        while ( getline (infile,line) )
+        { 
+            string str1 = line.substr(0,4);
+            if ( str1.compare("ATOM") == 0 )
+            {
+                stringstream ss;
+                ss.width(6);
+                ss << setprecision(3) << score_vert[i_atom];
+                string str;
+                ss >> str;
+                for(int i=str.length();i<6;i++)
+                {
+                    str = str + ' ';
+                }
+                line.replace(61,6,str);
+                outfile << line << endl;
+                i_atom++;
+            }            
+            else
+            {
+                outfile << line << endl;
+            }
 
+        }
+        infile.close();
+        outfile.close();
+    }
+    return 0;
+}
 

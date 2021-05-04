@@ -4,7 +4,7 @@
 using namespace std;
 using namespace arma;
 
-const double pi = M_PI;
+//const double pi = M_PI;
 
 dmat calc_covariance_matrix(dmat X,float bandwidth=0.01)
 {
@@ -85,9 +85,8 @@ dvec calc_rate(dmat X, dmat f_draws, bool verbose=true)
     dvec D_s;
     svd(D_U,D_s,D_V,D);
     uvec ind = find(D_s > 1e-10);
-    int r = ind.n_elem;
     D_U = D_U.cols(ind);
-    dmat U = D_U.each_col() % sqrt(D_s.elem(ind));
+    dmat U = D_U.each_row() % sqrt(D_s.elem(ind)).t();
     dvec mu = conv_to<dvec>::from(mean(beta_draws,0));
     mu = abs(mu);
     dmat Lambda = U * U.t();
@@ -106,12 +105,13 @@ dvec calc_rate(dmat X, dmat f_draws, bool verbose=true)
         dvec alpha = U_no_q_q.t() * U_no_qq * U_no_q_q;
         kld(q) = pow(mu(q),2.0) * alpha(0) * 0.5;
     }
-    
+    kld.save("kld.txt",raw_ascii);
+
     if (verbose)
         cout << "KLD calculation Completed.\n";
     
     // Compute the corresponding “RelATive cEntrality” (RATE) measure
-    dvec rates = kld / accu(kld);
+    dvec rates = kld / sum(kld);
 
     /// Find the entropic deviation from a uniform distribution 
     //delta = np.sum(rates*np.log(len(mu)*rates))
@@ -130,13 +130,13 @@ dmat find_rate_variables_with_other_sampling_methods(dmat X,vec y,float bandwidt
     nonzero_col.print();
     X = conv_to<dmat>::from(X.cols(nonzero_col));
     cout << X.n_rows << ' ' << X.n_cols << endl;
-    dmat K = calc_covariance_matrix(X.t(),bandwidth);
+    //dmat K = calc_covariance_matrix(X.t(),bandwidth);
     //K.save("K.bin",arma_binary);
     dmat samples;
     //if (not sampling_method.compare("ESS"))
-    samples = elliptical_slice_sampling(K,y,N_mcmc,burn_in,seed,true);
-    //samples.save("ESS_2.bin",arma_binary);    
-    //samples.load("ESS_2.bin",arma_binary);
+    //samples = elliptical_slice_sampling(K,y,N_mcmc,burn_in,seed,true);
+    //samples.save("ESS.bin",arma_binary);    
+    samples.load("ESS.bin",arma_binary);
     dvec rates_nv = calc_rate(X,samples);
     dvec rates(n_fils,fill::zeros);
     for(int i=0;i<nonzero_col.n_elem;i++)
