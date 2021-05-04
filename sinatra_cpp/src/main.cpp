@@ -3,13 +3,17 @@
 #include <string>
 #include <iomanip>
 #include <omp.h>
+#include <armadillo>
 
 #include "tools.h"
 #include "mesh.h"
 #include "direction.h"
 #include "euler.h"
+#include "gp.h"
+#include "reconstruction.h"
 
 using namespace std;
+using namespace arma;
 
 int main ()
 {
@@ -21,7 +25,6 @@ int main ()
     string pdbpath_B = "../pdb/R164S_offset_0/";
     string mshpath_B = "../msh/R164S_offset_0/";
     
-    /*
     double max_radius = 0.0;
     for(int i_frame=0;i_frame<100;i_frame++)
     {
@@ -73,7 +76,6 @@ int main ()
         cout << flush;
     }
     cout << "Mesh Construction Complete.      \n";
-    */
 
     vector<vector<double> > directions = generate_equidistributed_cones(5,0.8,4,false);
     cout << directions.size() << " Directions generated\n";
@@ -126,6 +128,25 @@ int main ()
     }
     cout << "EC Calculation Complete.      \n";
 
+    dmat X;
+    dvec y;
+    X.load("DECT_5_4_0.8_50.txt",raw_ascii);
+    y.load("label_WT_R164S.txt",raw_ascii);
+    dvec rates = find_rate_variables_with_other_sampling_methods(X,y);
+    rates.save("rates_5_4_0.8_50.txt",raw_ascii);
+    
+    vector<vector<double> > directions = generate_equidistributed_cones(5,0.8,4,false);
+    dvec rates_dvec;
+    rates_dvec.load("rates_5_4_0.8_50.txt",raw_ascii);
+    string mshpath_A = "../msh/WT_offset_0/";
+    string mshfile = mshpath_A + "WT_frame0.msh";
+    vector<double> rates_vert = reconstruct_by_sorted_threshold(mshfile,directions,rates_dvec,50,4);
+    ofstream rfile;
+    rfile.open("rates_vert.txt");
+    for(int i=0;i<rates_vert.size();i++)
+        rfile << rates_vert[i] << '\n';
+    rfile.close();
+    
     return 0;
 }
 
