@@ -142,9 +142,14 @@ class mesh
             }
             return 0;
         }
+
+    // Neighbor grid search to construct neighbor list for each atom
+    // Note that no periodic boundary condition is considered here, it assumes the molecule is whole
     vector<vector<int> > neighbor_grid_search(double cutoff)
     {
         double sqcutoff = cutoff*cutoff;
+        
+        // Find boundary of the molecule i.e. min/max coordinates in x,y,z direction
         vector<double> min(3, 1e99);
         vector<double> max(3, -1e99);
         for(int i=0;i<coords.size();i++)
@@ -157,7 +162,9 @@ class mesh
                     min[j] = coords[i][j];
             }
         }
-        double cellsize = cutoff*1.2;
+
+        // Divide the bounded box into cells
+        double cellsize = cutoff*1.1;
         vector<int> n_block(3,0);
         for(int i=0;i<3;i++)
         {
@@ -165,6 +172,7 @@ class mesh
             n_block[i] = static_cast<int>(n_b) + 1;
         }
         
+        // Initialize vector for atom list in each cell
         vector<vector<vector<vector<int> > > > box_atomlist;
         for(int i=0;i<n_block[0];i++)
         {
@@ -182,6 +190,7 @@ class mesh
             box_atomlist.push_back(vvv);  
         }
         
+        // Put each atom into a cell by simple division of coordinates
         for(int i=0;i<coords.size();i++)
         {
             int ind[3];
@@ -190,16 +199,21 @@ class mesh
             box_atomlist[ind[0]][ind[1]][ind[2]].push_back(i);
         }
         
+        // Initialize neighbor list
         vector<vector<int> > neighbor_list;
         for(int i=0;i<coords.size();i++)
         {
             vector<int> v(0,0);
             neighbor_list.push_back(v);
         }
+
+        // Look at each cell
         for(int i=0;i<n_block[0];i++)
             for(int j=0;j<n_block[1];j++)
                 for(int k=0;k<n_block[2];k++)
                 {
+                    // Look at the neighboring cells (including diagonal neighbors)
+                    // and look at all atoms in these neighboring cells
                     vector<int> nbbox_atom;
                     for(int a=-1;a<2;a++)
                     {
@@ -221,6 +235,15 @@ class mesh
                             }
                         }
                     }
+                    
+                    // for each atom A in the center cell
+                    // if an atom B in the neighboring cells has distance < cutoff
+                    // mutually put each other atom into its neighbor list
+                    // i.e. put atom A into atom B neighbor list
+                    //      put atom B into atom A neighbor list
+                    //
+                    // The method saves time on computing distances on every atom to every atom
+                    // which is computationally intensive O(N^2)
                     for(int m=0;m<box_atomlist[i][j][k].size();m++)
                         for(int n=0;n<nbbox_atom.size();n++)
                         {
@@ -263,9 +286,9 @@ class mesh
 
     vector<vector<int> > neighbor_to_edge()
     {
-        for(int n=0;n<neighbor_list.size();n++)
+        for(int n=0;n<neighbor_list.size();n++) // For each atom n
         {
-            for(int i=0;i<neighbor_list[n].size();i++)
+            for(int i=0;i<neighbor_list[n].size();i++) // basically connect to every neighbor into edge
             {
                 int a = neighbor_list[n][i];
                 if (a > n)
@@ -280,19 +303,19 @@ class mesh
 
     vector<vector<int> > neighbor_to_face()
     {
-        for(int n=0;n<neighbor_list.size();n++)
+        for(int n=0;n<neighbor_list.size();n++) // For each atom n
         {
-            for(int i=0;i<neighbor_list[n].size();i++)
+            for(int i=0;i<neighbor_list[n].size();i++) // look at its neighbor list
             {
-                int a = neighbor_list[n][i];
+                int a = neighbor_list[n][i];  // a connects n
                 if (a < n)
                     continue;
-                for(int j=0;j<neighbor_list[a].size();j++)
+                for(int j=0;j<neighbor_list[a].size();j++)  // look at a's neighbor
                 {
-                    int b = neighbor_list[a][j];
+                    int b = neighbor_list[a][j]; // b connects a
                     if (b < a)
                         continue;
-                    if (item_in_list(n,neighbor_list[b]))
+                    if (item_in_list(n,neighbor_list[b]))   // if b connects back to n, construct triangular face
                     {
                         vector<int> face = {n,a,b};
                         face_list.push_back(face);
