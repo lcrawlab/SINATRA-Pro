@@ -145,7 +145,7 @@ class mesh
 
     // Neighbor grid search to construct neighbor list for each atom
     // Note that no periodic boundary condition is considered here, it assumes the molecule is whole
-    vector<vector<int> > neighbor_grid_search(double cutoff)
+    int neighbor_grid_search(double cutoff)
     {
         double sqcutoff = cutoff*cutoff;
         
@@ -200,7 +200,6 @@ class mesh
         }
         
         // Initialize neighbor list
-        vector<vector<int> > neighbor_list;
         for(int i=0;i<coords.size();i++)
         {
             vector<int> v(0,0);
@@ -281,7 +280,7 @@ class mesh
                             }
                         }
                 }
-        return neighbor_list;
+        return 0;
     }
 
     vector<vector<int> > neighbor_to_edge()

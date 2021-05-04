@@ -127,16 +127,21 @@ dmat find_rate_variables_with_other_sampling_methods(dmat X,vec y,float bandwidt
 {   
     int n_fils = X.n_cols;
     uvec nonzero_col = find(any(X,0));
-    nonzero_col.print();
     X = conv_to<dmat>::from(X.cols(nonzero_col));
+    cout << "X " << X.n_rows << ' ' << X.n_cols << endl;
+    dmat X_colmean = mean(X,0);
+    dmat X_colstd = stddev(X,0,0);    
+    X.each_row() -= X_colmean;
+    X.each_row() /= X_colstd;
+    
     cout << X.n_rows << ' ' << X.n_cols << endl;
-    //dmat K = calc_covariance_matrix(X.t(),bandwidth);
+    dmat K = calc_covariance_matrix(X.t(),bandwidth);
     //K.save("K.bin",arma_binary);
     dmat samples;
     //if (not sampling_method.compare("ESS"))
-    //samples = elliptical_slice_sampling(K,y,N_mcmc,burn_in,seed,true);
+    samples = elliptical_slice_sampling(K,y,N_mcmc,burn_in,seed,true);
     //samples.save("ESS.bin",arma_binary);    
-    samples.load("ESS.bin",arma_binary);
+    //samples.load("ESS.bin",arma_binary);
     dvec rates_nv = calc_rate(X,samples);
     dvec rates(n_fils,fill::zeros);
     for(int i=0;i<nonzero_col.n_elem;i++)
