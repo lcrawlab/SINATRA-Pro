@@ -103,4 +103,76 @@ vector<vector<double> > compute_ec_curve(mesh meshA, vector<vector<double> > dir
     return ec_curves;
 }
 
+int compute_ec_curve_multiple_files(string mshpath_A, string mshpath_B, vector<vector<double> > directions, int n_filtration, string ec_type="DECT", string y_filename="label.txt", string filesuffix="")
+{
+    double ball_radius = 1.0;
+    ofstream ecfile, yfile;
+    ecfile.open(ec_type+filesuffix+".txt");
+    yfile.open(y_filename);
+    vector<vector<double> > ec_matrix;
+    vector<int> label;
+    for (const auto & file : experimental::filesystem::directory_iterator(mshpath_A))
+    {
+        string filename = file.path();
+        string extension = filename.substr(filename.size()-4,4);        
+        if (not extension.compare(".msh"))
+        {
+            string filename_short = filename.substr(filename.rfind("/") + 1);
+            filename_short = filename_short.substr(0,filename_short.size()-4);
+            cout << "Calculation EC for " << filename_short << "..." << '\r';
+            cout << flush;
+            mesh meshA;
+            meshA.read_mesh(filename);
+            vector<vector<double> > ec_curves = compute_ec_curve(meshA,directions,ball_radius,n_filtration,ec_type);
+            //vector<double> flattened(begin(ec_curves[0]), end(ec_curves[0]));
+            //for(int i_dir=1;i_dir<ec_curves.size();i_dir++)
+            //    flattened.insert(end(flattened), begin(ec_curves[i_dir]), end(ec_curves[i_dir]));
+            //ec_matrix.push_back(flattened);
+            for(int i_dir=0;i_dir<ec_curves.size();i_dir++)
+            {
+                for(int i_fil=0;i_fil<ec_curves[i_dir].size();i_fil++)
+                {
+                    ecfile << setprecision(6) << ec_curves[i_dir][i_fil] << ' ';
+                }
+            }
+            ecfile << '\n';
+            //label.push_back(0);
+            yfile << "0\n";
+        }
+    }
+    for (const auto & file : experimental::filesystem::directory_iterator(mshpath_B))
+    { 
+        string filename = file.path();
+        string extension = filename.substr(filename.size()-4,4);        
+        if (not extension.compare(".msh"))
+        {
+            string filename_short = filename.substr(filename.rfind("/") + 1);
+            filename_short = filename_short.substr(0,filename_short.size()-4);
+            cout << "Calculation EC for " << filename_short << "..." << '\r';
+            cout << flush;
+            mesh meshA;
+            meshA.read_mesh(filename);
+            vector<vector<double> > ec_curves = compute_ec_curve(meshA,directions,ball_radius,n_filtration,ec_type);
+            //vector<double> flattened(begin(ec_curves[0]), end(ec_curves[0]));
+            //for(int i_dir=1;i_dir<ec_curves.size();i_dir++)
+            //    flattened.insert(end(flattened), begin(ec_curves[i_dir]), end(ec_curves[i_dir]));
+            //ec_matrix.push_back(flattened);
+            for(int i_dir=0;i_dir<ec_curves.size();i_dir++)
+            {
+                for(int i_fil=0;i_fil<ec_curves[i_dir].size();i_fil++)
+                {
+                    ecfile << setprecision(6) << ec_curves[i_dir][i_fil] << ' ';
+                }
+            }
+        }
+        ecfile << '\n';
+        //label.push_back(1);
+        yfile << "1\n";
+    }
+    ecfile.close();
+    yfile.close();
+    cout << "EC Calculation Complete.      \n";
+    return 0;
+}
+
 

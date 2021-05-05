@@ -1,5 +1,6 @@
 #include <iostream>
 #include <armadillo>
+#include <omp.h>
 
 using namespace std;
 using namespace arma;
@@ -12,14 +13,17 @@ dmat calc_covariance_matrix(dmat X,float bandwidth=0.01)
     int n = X.n_cols;    
     dmat K(n,n,fill::eye);
     #pragma omp parallel
-    for(int i=0;i<n;i++)
-        for(int j=i+1;j<n;j++)
-        {
-            vec diff = X.col(i) - X.col(j);
-            double mean_diff = mean(diff % diff);
-            K(i,j) = exp(-mean_diff*bandwidth);
-            K(j,i) = K(i,j);
-        }
+    {
+        #pragma omp for
+        for(int i=0;i<n;i++)
+            for(int j=i+1;j<n;j++)
+            {
+                vec diff = X.col(i) - X.col(j);
+                double mean_diff = mean(diff % diff);
+                K(i,j) = exp(-mean_diff*bandwidth);
+                K(j,i) = K(i,j);
+            }
+    }
     return K;
 }
 
@@ -47,9 +51,15 @@ dmat elliptical_slice_sampling(dmat K,vec y,int N_mcmc=100000,int burn_in=1000,i
     for(int i=1;i<burn_in+N_mcmc;i++)
     {
         if (i < burn_in)
+        {
             cout << "Burning in...\r";
+            cout << flush;
+        }
         else
+        {
             cout << "Elliptical slice sampling Step " << (i-burn_in+1) << "...\r";
+            cout << flush;
+        }
         dvec f = conv_to<dvec>::from(mcmc_samples.row(i-1));
         double llh_thresh = probit_log_likelihood(f,y) + log(unif_samples(i));
         dvec f_star = f * cos(theta(i)) + norm_samples.row(i).t();

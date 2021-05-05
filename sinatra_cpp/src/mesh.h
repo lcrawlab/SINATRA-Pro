@@ -4,6 +4,7 @@
 #include <vector>
 #include <cmath>
 #include <iomanip>
+#include <experimental/filesystem>
 
 using namespace std;
 
@@ -15,37 +16,6 @@ bool item_in_list(auto a, vector<auto> b)
             return 1;
     }
     return 0;
-}
-
-
-vector<vector<double> > read_pdb (string filename)
-{
-    ifstream pdbfile;
-    pdbfile.open(filename);
-    string line;
-    vector<vector<double> > coords;
-    if (pdbfile.is_open())
-    {
-        while ( getline (pdbfile,line) )
-        { 
-            string str1 = line.substr(0,4);
-            if ( str1.compare("ATOM") == 0 )
-            {
-                string substr = line.substr(30,24);
-                stringstream ss(substr);
-                vector<double> pos;
-                for(int i=0;i<3;i++)
-                {
-                    double x;
-                    ss >> x;
-                    pos.push_back(x);
-                }
-                coords.push_back(pos);
-            }            
-        }
-        pdbfile.close();
-    }
-    return coords;
 }
 
 class mesh
@@ -326,4 +296,108 @@ class mesh
     }
 };
 
+vector<vector<double> > read_pdb (string filename)
+{
+    ifstream pdbfile;
+    pdbfile.open(filename);
+    string line;
+    vector<vector<double> > coords;
+    if (pdbfile.is_open())
+    {
+        while ( getline (pdbfile,line) )
+        { 
+            string str1 = line.substr(0,4);
+            if ( str1.compare("ATOM") == 0 )
+            {
+                string substr = line.substr(30,24);
+                stringstream ss(substr);
+                vector<double> pos;
+                for(int i=0;i<3;i++)
+                {
+                    double x;
+                    ss >> x;
+                    pos.push_back(x);
+                }
+                coords.push_back(pos);
+            }            
+        }
+        pdbfile.close();
+    }
+    return coords;
+}
+
+int pdb_to_mesh(string pdbpath_A, string pdbpath_B, string mshpath_A, string mshpath_B, double cutoff)
+{    
+    cout << "Calculating radius...\n";
+    double max_radius = 0.0;
+    for (const auto & file : experimental::filesystem::directory_iterator(pdbpath_A))
+    {
+        string filename = file.path();
+        string extension = filename.substr(filename.size()-4,4);
+        if (not extension.compare(".pdb"))
+        {
+            mesh meshA;
+            meshA.coords = read_pdb(filename);
+            double radius = meshA.calc_max_radius();
+            if (radius > max_radius)
+                max_radius = radius;
+        }
+    }
+    for (const auto & file : experimental::filesystem::directory_iterator(pdbpath_B))
+    {
+        string filename = file.path();
+        string extension = filename.substr(filename.size()-4,4);
+        if (not extension.compare(".pdb"))
+        {
+            mesh meshA;
+            meshA.coords = read_pdb(filename);
+            double radius = meshA.calc_max_radius();
+            if (radius > max_radius)
+                max_radius = radius;
+        }
+    }
+    cout << "Max radius = " << max_radius << endl;
+    
+    for (const auto & file : experimental::filesystem::directory_iterator(pdbpath_A))
+    {
+        string filename = file.path();
+        string extension = filename.substr(filename.size()-4,4);
+        if (not extension.compare(".pdb"))
+        {
+            string filename_short = filename.substr(filename.rfind("/") + 1);
+            filename_short = filename_short.substr(0,filename_short.size()-4);
+            cout << "Constructing mesh for " << filename_short << '\r';
+            cout << flush;
+            mesh meshA;
+            meshA.coords = read_pdb(filename);
+            meshA.neighbor_grid_search(cutoff);
+            meshA.neighbor_to_edge();
+            meshA.neighbor_to_face();
+            meshA.normalize_to(max_radius);
+            string mshfile = mshpath_A + '/' + filename_short + ".msh";
+            meshA.write_mesh(mshfile);
+        }
+    }
+    for (const auto & file : experimental::filesystem::directory_iterator(pdbpath_B))
+    {
+        string filename = file.path();
+        string extension = filename.substr(filename.size()-4,4);
+        if (not extension.compare(".pdb"))
+        {
+            string filename_short = filename.substr(filename.rfind("/") + 1);
+            filename_short = filename_short.substr(0,filename_short.size()-4);
+            cout << "Constructing mesh for " << filename_short << '\r';
+            cout << flush;
+            mesh meshA;
+            meshA.coords = read_pdb(filename);
+            meshA.neighbor_grid_search(cutoff);
+            meshA.neighbor_to_edge();
+            meshA.neighbor_to_face();
+            meshA.normalize_to(max_radius);
+            string mshfile = mshpath_B + '/' + filename_short + ".msh";
+            meshA.write_mesh(mshfile);
+        }
+    }
+    return 0;
+}
 
