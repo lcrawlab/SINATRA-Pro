@@ -84,3 +84,26 @@ int add_rate_pdb (string infilename, string outfilename, dvec rates_vert)
     return 0;
 }
 
+vector<double> reconstruct_multiple_mesh(string mshpath,dvec rates_dvec, vector<vector<double> > directions, int n_filtration, int n_direction_per_cone)
+{
+    vector<double> rates_vert_frames;
+    int n_mesh = 0;
+    for (const auto & file : experimental::filesystem::directory_iterator(mshpath))
+    {
+        string filename = file.path();
+        string extension = filename.substr(filename.size()-4,4);
+        if (not extension.compare(".msh"))
+        {
+            vector<double> rates_vert = reconstruct_by_sorted_threshold(filename,directions,rates_dvec,n_filtration,n_direction_per_cone);
+            if (rates_vert_frames.empty())
+                rates_vert_frames = rates_vert;
+            else
+                for(int i=0;i<rates_vert.size();i++)
+                    rates_vert_frames[i] += rates_vert[i];
+            n_mesh++;
+        }
+    }
+    for(int i=0;i<rates_vert_frames.size();i++)
+        rates_vert_frames[i] /= n_mesh;
+    return rates_vert_frames;
+}

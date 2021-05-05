@@ -1,3 +1,4 @@
+// g++ main.cpp -o main -larmadillo -fopenmp -I. -lstdc++fs
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -20,154 +21,44 @@ int main ()
     const int number_of_threads = 4;
     omp_set_num_threads(number_of_threads);
     
-    string pdbpath_A = "../../python_script/WT_R164S_65_213/pdb/WT_offset_0/";
-    string mshpath_A = "../msh/WT_offset_0/";
-    string pdbpath_B = "../../python_script/WT_R164S_65_213/pdb/R164S_offset_0/";
-    string mshpath_B = "../msh/R164S_offset_0/";
+    const string ec_type = "DECT";
+    const int n_filtration = 60;
+    const int n_cone = 10;
+    const int n_direction_per_cone = 4;
+    const double cap_radius = 0.80;
+    const double cutoff = 4.0;
     
-    double max_radius = 0.0;
-    for(int i_frame=0;i_frame<100;i_frame++)
-    {
-        mesh meshA;
-        string filename = pdbpath_A + "WT_frame" + to_string(i_frame) + ".pdb";
-        meshA.coords = read_pdb(filename);
-        double radius = meshA.calc_max_radius();
-        if (radius > max_radius)
-            max_radius = radius;
-    }
-    for(int i_frame=0;i_frame<100;i_frame++)
-    {
-        mesh meshA;
-        string filename = pdbpath_B + "R164S_frame" + to_string(i_frame) + ".pdb";
-        meshA.coords = read_pdb(filename);
-        double radius = meshA.calc_max_radius();
-        if (radius > max_radius)
-            max_radius = radius;
-    }
-    cout << "Max radius = " << max_radius << '\n';
+    const string pdbpath_A = "../../python_script/WT_R164S_65_213/pdb/WT_offset_0/";
+    const string mshpath_A = "../msh/WT_offset_0/";
+    const string pdbpath_B = "../../python_script/WT_R164S_65_213/pdb/R164S_offset_0/";
+    const string mshpath_B = "../msh/R164S_offset_0/";
+    const string pdbfile_recon = pdbpath_A + "WT_frame0.pdb";
+    const string y_filename = "label.txt";
 
-    for(int i_frame=0;i_frame<100;i_frame++)
-    {
-        cout << "Constructing Mesh for frame " << i_frame << "..." << '\r';
-        mesh meshA;
-        string filename = pdbpath_A + "WT_frame" + to_string(i_frame) + ".pdb";
-        meshA.coords = read_pdb(filename);
-        meshA.neighbor_grid_search(4.0);
-        meshA.neighbor_to_edge();
-        meshA.neighbor_to_face();
-        meshA.normalize_to(max_radius);
-        string mshfile = mshpath_A + "WT_frame" + to_string(i_frame) + ".msh";
-        meshA.write_mesh(mshfile);
-        cout << flush;
-    }
-    
-    for(int i_frame=0;i_frame<100;i_frame++)
-    {
-        cout << "Constructing Mesh for frame " << i_frame << "..." << '\r';
-        mesh meshA;
-        string filename = pdbpath_B + "R164S_frame" + to_string(i_frame) + ".pdb";
-        meshA.coords = read_pdb(filename);
-        meshA.neighbor_grid_search(4.0);
-        meshA.neighbor_to_edge();
-        meshA.neighbor_to_face();
-        meshA.normalize_to(max_radius);
-        string mshfile = mshpath_B + "R164S_frame" + to_string(i_frame) + ".msh";
-        meshA.write_mesh(mshfile);
-        cout << flush;
-    }
-    cout << "Mesh Construction Complete.      \n";
-    
-    vector<vector<double> > directions = generate_equidistributed_cones(10,0.8,4,false);
+    string filesuffix;
+    stringstream ss_filesuffix;
+    ss_filesuffix << '_' << n_cone << '_' << n_direction_per_cone << '_' << setprecision(4) << cap_radius << '_' << n_filtration;
+    ss_filesuffix >> filesuffix;
+
+    pdb_to_mesh(pdbpath_A,pdbpath_B,mshpath_A,mshpath_B,cutoff);
+    vector<vector<double> > directions = generate_equidistributed_cones(n_cone,cap_radius,n_direction_per_cone,false);
     cout << directions.size() << " Directions generated\n";
+    compute_ec_curve_multiple_files(mshpath_A,mshpath_B,directions,n_filtration,ec_type,y_filename,filesuffix);  
     
-    ofstream ecfile, yfile;
-    ecfile.open("DECT_10_4_0.8_60.txt");
-    yfile.open("label_WT_R164S.txt");
-    //vector<vector<double> > ec_matrix;
-    //vector<int> label;
-    for(int i_frame=0;i_frame<100;i_frame++)
-    {
-        cout << "Calculation EC for frame " << i_frame << "..." << '\r';
-        mesh meshA;
-        string mshfile = mshpath_A + "WT_frame" + to_string(i_frame) + ".msh";
-        meshA.read_mesh(mshfile);
-        vector<vector<double> > ec_curves = compute_ec_curve(meshA,directions,1.0,60,"DECT");
-        //vector<double> flattened(begin(ec_curves[0]), end(ec_curves[0]));
-        //for(int i_dir=1;i_dir<ec_curves.size();i_dir++)
-        //    flattened.insert(end(flattened), begin(ec_curves[i_dir]), end(ec_curves[i_dir]));
-        //ec_matrix.push_back(flattened);
-        for(int i_dir=0;i_dir<ec_curves.size();i_dir++)
-        {
-            for(int i_fil=0;i_fil<ec_curves[i_dir].size();i_fil++)
-            {
-                ecfile << setprecision(6) << ec_curves[i_dir][i_fil] << ' ';
-            }
-        }
-        ecfile << '\n';
-        yfile << "0\n";
-        //label.push_back(0);
-    }
-    for(int i_frame=0;i_frame<100;i_frame++)
-    {
-        cout << "Calculation EC for frame " << i_frame << "..." << '\r';
-        mesh meshA;
-        string mshfile = mshpath_B + "R164S_frame" + to_string(i_frame) + ".msh";
-        meshA.read_mesh(mshfile);
-        vector<vector<double> > ec_curves = compute_ec_curve(meshA,directions,1.0,60,"DECT");
-        for(int i_dir=0;i_dir<ec_curves.size();i_dir++)
-        {
-            for(int i_fil=0;i_fil<ec_curves[i_dir].size();i_fil++)
-            {
-                ecfile << setprecision(6) << ec_curves[i_dir][i_fil] << ' ';
-            }
-        }
-        ecfile << '\n';
-        yfile << "1\n";
-        //vector<double> flattened(begin(ec_curves[0]), end(ec_curves[0]));
-        //for(int i_dir=1;i_dir<ec_curves.size();i_dir++)
-        //    flattened.insert(end(flattened), begin(ec_curves[i_dir]), end(ec_curves[i_dir]));
-        //ec_matrix.push_back(flattened);
-        //label.push_back(1);
-    }
-    ecfile.close();
-    yfile.close();
-    cout << "EC Calculation Complete.      \n";
-     
     dmat X;
     dvec y;
-    X.load("DECT_10_4_0.8_60.txt",raw_ascii);
-    y.load("label_WT_R164S.txt",raw_ascii);
-    dvec rates = find_rate_variables_with_other_sampling_methods(X,y);
-    rates.save("rates_10_4_0.8_60.txt",raw_ascii);
+    X.load(ec_type+filesuffix+".txt",raw_ascii);
+    y.load(y_filename,raw_ascii);
     
-    //vector<vector<double> > directions = generate_equidistributed_cones(10,0.8,4,false);
-    dvec rates_dvec;
-    rates_dvec.load("rates_10_4_0.8_60.txt",raw_ascii);
-    vector<double> rates_vert_frames;
-    for(int i_frame=0;i_frame<100;i_frame++)
-    { 
-        string mshpath_A = "../msh/WT_offset_0/";
-        string mshfile = mshpath_A + "WT_frame" + to_string(i_frame) + ".msh";
-        vector<double> rates_vert = reconstruct_by_sorted_threshold(mshfile,directions,rates_dvec,60,4);
-        if (rates_vert_frames.empty())
-            rates_vert_frames = rates_vert;
-        else
-            for(int i=0;i<rates_vert.size();i++)
-                rates_vert_frames[i] += rates_vert[i];
-    }
-    ofstream rfile;
-    rfile.open("rates_vert.txt");
-    for(int i=0;i<rates_vert_frames.size();i++)
-    {
-        rates_vert_frames[i] /= 100;
-        rfile << rates_vert_frames[i] << '\n';
-    }
-    rfile.close();
-    
-    dvec rates_vert;
-    rates_vert.load("rates_vert.txt");
-    add_rate_pdb(pdbpath_A+"WT_frame0.pdb","rates_vert.pdb",rates_vert);
-   
+    dvec rates;
+    rates = find_rate_variables_with_other_sampling_methods(X,y);
+    rates.save("rates_"+filesuffix+".txt",raw_ascii);    
+    //rates.load("rates"+filesuffix+".txt",raw_ascii);
+    vector<double> vec_rates_vert = reconstruct_multiple_mesh(mshpath_A,rates,directions,n_filtration,n_direction_per_cone);
+    dvec rates_vert = conv_to<dvec>::from(vec_rates_vert);
+    rates_vert.save("rates_vert"+filesuffix+".txt",raw_ascii); 
+    //rates_vert.load("rates_vert"+filesuffix".txt,raw_ascii);
+    add_rate_pdb(pdbfile_recon,"rates_vert"+filesuffix+".pdb",rates_vert);
     return 0;
 }
 
