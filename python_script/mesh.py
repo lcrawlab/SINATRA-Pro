@@ -192,7 +192,7 @@ class mesh:
                     self.n_face = int(p[2])
                     self.vertices = np.zeros((self.n_vertex,3),dtype=float)
                     self.faces = np.zeros((self.n_face,3),dtype=int)
-                    self.edges = np.zeros((self.n_edge,3),dtype=int)
+                    self.edges = np.zeros((self.n_edge,2),dtype=int)
                 elif n_line < self.n_vertex + 1:
                     if i_v < self.n_vertex:
                         for i in range(3):
