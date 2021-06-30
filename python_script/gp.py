@@ -1,4 +1,5 @@
 #!/bin/python3
+
 import numpy as np, sys
 from scipy.stats import norm
 from RATE import *
@@ -18,7 +19,7 @@ def probit_log_likelihood(latent_variables, class_labels):
     return np.sum(np.log(norm.cdf(latent_variables*class_labels)))
 
 def logistic_log_likelihood(latent_variables, class_labels):
-    return -np.sum(np.log(1+np.exp(latent_variables*class_labels)))
+    return(-np.sum(np.log(1.0+np.exp(latent_variables*class_labels))))
 
 ## Adopted from FastGP::ess
 def Elliptical_Slice_Sampling(K,y,N_mcmc=100000,burn_in=1000,probit=True,seed=None,verbose=False):
@@ -60,7 +61,7 @@ def Elliptical_Slice_Sampling(K,y,N_mcmc=100000,burn_in=1000,probit=True,seed=No
         sys.stdout.write('\n')
     return mcmc_samples[burn_in:,:]
 
-def find_rate_variables_with_other_sampling_methods(X,y,bandwidth = 0.01,size = 100000,N_mcmc = 100000,burn_in = 1000,probit = True,seed = None, parallel = False, n_core = -1, verbose = False):
+def find_rate_variables_with_other_sampling_methods(X,y,bandwidth = 0.01,sampling_method = 'ESS',size = 100000,N_mcmc = 100000,burn_in = 1000,probit = True,seed = None, parallel = False, n_core = -1, verbose = False):
     n = X.shape[0]
     f = np.zeros(n)
     if verbose:
