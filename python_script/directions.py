@@ -3,11 +3,12 @@
 import numpy as np
 
 #  Compute the directions about a cone using the rodrigues angle formula.
-#   @export
-#  @param z (vector of length 3) The direction around which we want to rotate.
-#  @param r (float): The radius of the cone we want. Controls the cone size.
-#  @param j (int): The number of directions in the cone.
-#  @return dir (jx3 matrix): of directions in a cone of radius r about z.
+#  parameter:
+#      z (vector of length 3) The direction around which we want to rotate.
+#      r (float): The radius of the cone we want. Controls the cone size.
+#      j (int): The number of directions in the cone.
+#  return:
+#      directions (jx3 matrix): vectors of directions in a cone of radius r about z.
 def rodrigues(z,r,j):
     z /= np.linalg.norm(z)
     z0 = np.zeros(3)
@@ -30,16 +31,13 @@ def rodrigues(z,r,j):
     return directions
 
 
-#  Generate Equidistributed points on a sphere / hemi-sphere
-# 
-#  @export
-#  @description Generate equidistributed points about a sphere using (insert reference)
-# 
-#  @param desired_number (int): the desired number of equidistributed points on the 2-sphere.
-#  @param N (int): the initial number of points that the algorithm will try to generate. If the number of points generated is less than the desired number, the function will increment N
-#  @return points (desired_number x 3 matrix): The matrix of equidistributed points in on the sphere.
-# since the filtration axis go through the origin, lower hemi-sphere is a redundant information of the upper hemi-sphere
-
+#  Generate Equidistributed points on a sphere / hemi-sphere.
+#  parameter:
+#      desired_number (int): the desired number of equidistributed points on the 2-sphere.
+#      N (int): the initial number of points that the algorithm will try to generate. If the number of points generated is less than the desired number, the function will increment N
+#      hemisphere (bool) : generate points over hemisphere if True, over sphere if False.
+#  return:
+#      points (desired_number x 3 matrix): The matrix of equidistributed points in on the sphere.
 def generate_equidistributed_points(desired_number, N, hemisphere=False):
     if hemisphere:
         a = 2*np.pi/N
@@ -70,17 +68,15 @@ def generate_equidistributed_points(desired_number, N, hemisphere=False):
     else:
         return points
 
-# Generate Equidistributed Cones
-# 
-#  @export
-# @description  Generate cones that are equidistributed about the sphere. We first generate equidistributed points, then use the rodrigues angle formula
+# Generate equidistributed cones that are equidistributed about the sphere. We first generate equidistributed points, then use the rodrigues angle formula
 # to compute cones about those points.
-# 
-# @param num_directions (int): The number of equidistributed directions we want on the sphere.
-# @param cap_radius (float): The radius of the cones we generate (determines the size of each cone).
-# @param directions_per_cone (int): The number of directions we want generated within each cone.
-# 
-# @return directions (num_directions*directions_per_cone x 3 matrix): A matrix of equidistributed cones.
+# parameter:
+#     num_directions (int): The number of equidistributed directions we want on the sphere.
+#     cap_radius (float): The radius of the cones we generate (determines the size of each cone).
+#     directions_per_cone (int): The number of directions we want generated within each cone.
+#     hemisphere (bool) : generate cones over hemisphere if True, over sphere if False.
+# return:
+#     directions (num_directions*directions_per_cone x 3 matrix): A matrix of equidistributed cones.
 def generate_equidistributed_cones(n_cone, cap_radius = 0.1, n_direction_per_cone = 1, hemisphere=False):
     sphere = generate_equidistributed_points(n_cone, n_cone, hemisphere)
     directions = []
