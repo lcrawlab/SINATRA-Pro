@@ -1,6 +1,7 @@
 #!/bin/python3
 
 import numpy as np
+<<<<<<< HEAD
 from scipy.spatial import distance
 from MDAnalysis.lib.nsgrid import FastNS, NSResults
 import multiprocessing
@@ -109,6 +110,13 @@ class mesh:
         self.faces = np.array(self.faces)
         return
      
+=======
+
+class mesh:
+    def __init(self):
+        return
+    
+>>>>>>> 58eed95a1351010a064e2695526493d115943615
     def read_mesh_file(self,filename='output.mesh'):
         n_line = 0
         i_v = 0
@@ -141,6 +149,7 @@ class mesh:
                             self.faces[i_f][i] = int(p[i+1])
                         i_f += 1
                 n_line += 1
+<<<<<<< HEAD
         return 
    
     def write_mesh_file(self,filename='output.mesh'):
@@ -177,3 +186,11 @@ class mesh:
         self.write_mesh_file(filename=msh_file)
         return
 
+=======
+        return
+    
+    def centering(self):
+        center = np.mean(self.vertices,axis=0)
+        self.vertices = self.vertices - center
+        return
+>>>>>>> 58eed95a1351010a064e2695526493d115943615

@@ -20,7 +20,11 @@ traj_file_B = 'data/%s/md_0_1_noPBC.xtc'%protB
 ## Simplicies construction parameters
 #selection = 'protein'# and not (resid 164 and not backbone)'
 selection = 'protein and resid 65:230'
+<<<<<<< HEAD
 sm_radius = 2.0
+=======
+sm_radius = 2.0 #float(sys.argv[1])
+>>>>>>> 58eed95a1351010a064e2695526493d115943615
 
 ## Filtration directions parameters
 n_cone = 20
@@ -36,7 +40,12 @@ n_core = -1 ## Number of cores used for EC calculation
 ## Variable selection parameters
 bandwidth = 0.01
 sampling_method = "ESS"
+<<<<<<< HEAD
 directory = "WT_R164S_65_230"
+=======
+#directory = "%s_%s_65_213_%.1f"%(protA,protB,sm_radius)
+directory = "%s_%s_65_230_2.0"%(protA,protB)
+>>>>>>> 58eed95a1351010a064e2695526493d115943615
 
 n_step = int(10000/n_sample)
 n_skip = int(n_step/10)
