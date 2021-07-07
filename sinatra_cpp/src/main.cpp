@@ -1,4 +1,5 @@
 // g++ main.cpp -o main -larmadillo -fopenmp -I. -lstdc++fs
+
 #include <iostream>
 #include <fstream>
 #include <string>
