@@ -19,7 +19,6 @@ def calc_kld(mu,Lambda,V,q,verbose=False):
     kld = mu[q]**2 * alpha * .5
     return kld
 
-
 def RATE(X,f_draws=None,pre_specify=False,beta_draws=None,prop_var=1,snp_nms=None,low_rank=False,parallel=False,n_core=-1,verbose=False):
     if verbose:
         sys.stdout.write("Calculating RATE...\n")
