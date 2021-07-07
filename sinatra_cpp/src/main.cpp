@@ -17,24 +17,53 @@
 using namespace std;
 using namespace arma;
 
-int main ()
+int main (int argc, char *argv[])
 {
-    const int number_of_threads = 4;
+    
+    int number_of_threads = 4;
     omp_set_num_threads(number_of_threads);
     
-    const string ec_type = "DECT";
-    const int n_filtration = 60;
-    const int n_cone = 10;
-    const int n_direction_per_cone = 4;
-    const double cap_radius = 0.80;
-    const double cutoff = 4.0;
+    string ec_type = "DECT";
+    int n_filtration = 60;
+    int n_cone = 1;
+    int n_direction_per_cone = 1;
+    double cap_radius = 0.80;
+    double cutoff = 2.0;
     
-    const string pdbpath_A = "../../python_script/WT_R164S_65_213/pdb/WT_offset_0/";
-    const string mshpath_A = "../msh/WT_offset_0/";
-    const string pdbpath_B = "../../python_script/WT_R164S_65_213/pdb/R164S_offset_0/";
-    const string mshpath_B = "../msh/R164S_offset_0/";
-    const string pdbfile_recon = pdbpath_A + "WT_frame0.pdb";
-    const string y_filename = "label.txt";
+    string pdbpath_A = "../../python_script/WT_R164S_65_213/pdb/WT_offset_0/";
+    string mshpath_A = "../msh/WT_offset_0/";
+    string pdbpath_B = "../../python_script/WT_R164S_65_213/pdb/R164S_offset_0/";
+    string mshpath_B = "../msh/R164S_offset_0/";
+    /** 
+    cout << "Path to PDB files for protein A: ";
+    cin >> pdbpath_A;
+    cout << "Path to PDB files for protein B: ";
+    cin >> pdbpath_B;
+    cout << "Path to MSH files for protein A: ";
+    cin >> mshpath_A;
+    cout << "Path to MSH files for protein B: ";
+    cin >> mshpath_B;
+    **/
+    string pdbfile_recon = pdbpath_A + "WT_frame0.pdb";
+    string y_filename = "label.txt";
+
+    string tmp;
+    cout << "Type of Euler characteristic measure (DECT/ECT/SECT, default: DECT): ";
+    cin >> tmp;
+    if (tmp.compare("SECT") == 0) { ec_type = "SECT"; }
+    else if (tmp.compare("ECT") == 0) { ec_type = "ECT"; }
+    else {ec_type = "DECT"; }
+
+    cout << "Radius cutoff for simplicial construction: ";
+    cin >> cutoff;
+    cout << "Number of cones: ";
+    cin >> n_cone;
+    cout << "Number of directions per cone: ";
+    cin >> n_direction_per_cone;
+    cout << "Cap radius: ";
+    cin >> cap_radius;
+    cout << "Number of filtration steps: ";
+    cin >> n_filtration;
 
     string filesuffix;
     stringstream ss_filesuffix;
