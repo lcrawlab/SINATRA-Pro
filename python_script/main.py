@@ -4,48 +4,83 @@ from euler import *
 from gp import *
 from reconstruction import *
 import sys
+import argparse
 
 ##########################################################################
 
+parser = argparse.ArgumentParser(description='SINATRA Pro')
+
+parser.add_argument('-pa','--protA', type=str, help='name of protein A for file naming',  default='protA')
+parser.add_argument('-pb','--protB', type=str, help='name of protein B for file naming',  default='protB')
+
+parser.add_argument('-sa','--struct_file_A', type=str, help='structure file for protein A (.gro)')
+parser.add_argument('-ta','--traj_file_A', type=str, help='trajectory file for protein A (.xtc)')
+parser.add_argument('-sb','--struct_file_B', type=str, help='structure file for protein B (.gro)')
+parser.add_argument('-tb','--traj_file_B', type=str, help='trajectory file for protein B (.xtc)')
+
+parser.add_argument('-dir','--directory', type=str, help='directory for output files')
+
+parser.add_argument('-pl','--parallel', dest='parallel', action='store_true')
+parser.add_argument('-nc','--n_core', type=int, help='number of core for parallel computing, default: use all cores', default=-1)
+
+parser.add_argument('-n','--n_sample', type=int, help='number of sample drawn from trajectory, default: 10',default=10)
+parser.add_argument('-of','--offset', type=int, help='starting frame for sample drawn from trajectory, default: 0',default=0)
+parser.add_argument('-s','--selection', type=str, help='selection for protein, default: all protein', default='protein')
+parser.add_argument('-r','--radius', type=float, help='radius for simplicial construction, default: 2.0', default=2.0)
+
+parser.add_argument('-et','--ec_type', type=str, help='type of Euler characteristic measure (DECT/ECT/SECT), default: DECT', default='DECT')
+parser.add_argument('-c','--n_cone', type=int, help='number of cone, default: 1', default=1)
+parser.add_argument('-d','--n_direction_per_cone', type=int, help='number of direction per cone, default: 1', default=1)
+parser.add_argument('-t','--cap_radius', type=float, help='cap radius, default: 0.8', default=0.80)
+parser.add_argument('-l','--n_filtration', type=int, help='number of filtration step, default: 20', default=20)
+
+parser.add_argument('-bw','--bandwidth', type=float, help='bandwidth for elliptical slice sampling, default: 0.01',default=0.01)
+parser.add_argument('-sm','--sampling_method', type=str, help='sampling method, default: ESS', default='ESS')
+parser.add_argument('-nm','--n_mcmc', type=int, help='number of sample from ESS', default=100000)
+
+parser.add_argument('-v','--verbose', dest='verbose', action='store_true')
+
+parser.set_defaults(parallel=False,verbose=False)
+args = parser.parse_args()
+
 # Name the variants, just for filename purpose
-protA = "WT"
-protB = "R164S"
+# Protein names
+protA = args.protA
+protB = args.protB
 
-# number of structures to draw from trajectory
-n_sample = 1000
+# Input files
+struct_file_A = args.struct_file_A
+traj_file_A = args.traj_file_A
+struct_file_B = args.struct_file_B
+traj_file_B = args.traj_file_B
 
-## Input files
-struct_file_A = 'data/%s/md_0_1.gro'%protA
-traj_file_A = 'data/%s/md_0_1_noPBC.xtc'%protA
+# Output folder
+directory = args.directory
 
-struct_file_B = 'data/%s/md_0_1.gro'%protB
-traj_file_B = 'data/%s/md_0_1_noPBC.xtc'%protB
+# Parallelization
+parallel = args.parallel
+n_core = args.n_core
 
-## Simplicies construction parameters
-## try using 2.0, 4.0 or 6.0 Angstrom, longer r takes longer computational time, so try smaller first, then larger to see if there are any differences
-selection = 'protein'# and not (resid 164 and not backbone)'
-sm_radius = 2.0      
+# Sample from trajectory
+n_sample = args.n_sample
+offset = args.offset
+selection = args.selection
+sm_radius = args.radius
 
-## Filtration directions parameters
-n_cone = 20
-n_direction_per_cone = 8
-cap_radius = 0.80
-
-## Euler Characteristics (EC) calculation parameters
-ec_type = "DECT"
-n_filtration = 120
+## EC calculation 
+ec_type = args.ec_type
+n_cone = args.n_cone
+n_direction_per_cone = args.n_direction_per_cone
+cap_radius = args.cap_radius
+n_filtration = args.n_filtration
 
 ## Variable selection parameters
-bandwidth = 0.01
-#sampling_method = "ESS"
-directory = "WT_R164S_whole"
+bandwidth = args.bandwidth
+sampling_method = args.sampling_method
+n_mcmc = args.n_mcmc
 
-## Parallelization setting
-parallel = True  ## using multiple CPU cores for calculation
-n_core = -1      ## Number of cores used, -1 = automatically detect and use all cores
+verbose = args.verbose
 
-## verbose
-verbose = True
 
 ##########################################################################
 
