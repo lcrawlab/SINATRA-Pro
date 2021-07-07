@@ -81,7 +81,6 @@ n_mcmc = args.n_mcmc
 
 verbose = args.verbose
 
-
 ##########################################################################
 
 ## Read trajectory file and output aligned protein structures in pdb format
@@ -94,15 +93,16 @@ convert_traj_pdb_aligned(protA, protB,
         n_sample=n_sample, 
         selection=selection, 
         offset=0, 
-        directory=directory, 
-        single=True) ## single="True" is for single run purpose, "False" for duplicate runs purpose which groups and names file with the frame offset.
+        directory=directory,
+        single=True, ## single="True" is for single run purpose, "False" for duplicate runs purpose which groups and names file with the frame offset.
+        verbose=verbose)
 
 #####################
 ### IF you already have your own aligned structure, start HERE put them in directory_pdb_A and directory_pdb_B, and put in the filename for the structure to use for visualization
 #####################
 directory_pdb_A = "%s/pdb/%s/"%(directory,protA)
 directory_pdb_B = "%s/pdb/%s/"%(directory,protB)
-reference_pdb_file = "%s/%s_frame0.pdb"%(directory_pdb_A,protA,protA) ## which pdb to use for visualization
+reference_pdb_file = "%s/%s_frame0.pdb"%(directory_pdb_A,protA) ## which pdb to use for visualization
 
 ## Converted protein structures into simplicial mesehes
 convert_pdb_mesh(protA,protB,
@@ -120,7 +120,7 @@ directions = generate_equidistributed_cones(n_cone=n_cone,
         n_direction_per_cone=n_direction_per_cone,
         cap_radius=cap_radius,
         hemisphere=False)
-#np.savetxt("%s/directions_%d_%d_%.2f.txt"%(directory,n_cone,n_direction_per_cone,cap_radius),directions)
+np.savetxt("%s/directions_%d_%d_%.2f.txt"%(directory,n_cone,n_direction_per_cone,cap_radius),directions)
 
 ## EC calculations to convert simplicial meshes to topological summary statistics
 X, y, not_vacuum = compute_ec_curve_folder(protA,protB,directions,
@@ -144,9 +144,11 @@ np.savetxt('%s/%s_%s_label_all.txt'%(directory,protA,protB),y)
 ## RATE calculation for variable selections from the topological summary statistics
 kld, rates, delta, eff_samp_size = find_rate_variables_with_other_sampling_methods(X,y,
         bandwidth=bandwidth,
+        n_mcmc=n_mcmc,
         parallel=parallel,
         n_core=n_core,
         verbose=verbose)
+
 np.savetxt("%s/rates_%s_%s_%s_%d_%d_%.2f_%d.txt"%(directory,ec_type,protA,protB,n_cone,n_direction_per_cone,cap_radius,n_filtration),rates)
 
 ## reconstruct the RATE values onto the protein structures for visualization
@@ -159,7 +161,9 @@ vert_prob = reconstruct_on_multiple_mesh(protA,protB,directions,
         n_direction_per_cone=n_direction_per_cone,
         n_filtration=n_filtration,
         sm_radius=sm_radius,
-        directory_mesh="%s/msh/%s_%.1f"%(directory,protA,sm_radius),verbose=True)
+        directory_mesh="%s/msh/%s_%.1f"%(directory,protA,sm_radius),
+        verbose=verbose)
+
 np.savetxt("%s/vert_prob_DECT_%s_%s_%d_%d_%.2f_%d.txt"%(directory,protA,protB,n_cone,n_direction_per_cone,cap_radius,n_filtration),vert_prob)
 
 write_vert_prob_on_pdb(vert_prob,

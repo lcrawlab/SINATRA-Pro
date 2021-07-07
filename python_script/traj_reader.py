@@ -5,7 +5,7 @@ from MDAnalysis.analysis import align
 from MDAnalysis.analysis.rms import rmsd
 from MDAnalysis.core.groups import AtomGroup
 import numpy as np, os, sys
-from simplices_construction import *
+from mesh import *
 
 ####
 # Convert MD simulation trajectory to aligned protein structures in PDB format
@@ -17,7 +17,6 @@ from simplices_construction import *
 # n_sample = # of sample structure drawn from trajecotry at even time interval
 # directory = directory to store all the files
 ####
-
 def convert_traj_pdb_aligned(protA, protB, struct_file_A, traj_file_A, struct_file_B, traj_file_B, align_frame = 0, n_sample = 100, selection = None, directory = None, offset = 0, align_sequence = False, single = False, verbose = False):
     
     if directory == None:
@@ -80,21 +79,6 @@ def convert_traj_pdb_aligned(protA, protB, struct_file_A, traj_file_A, struct_fi
         u = mda.Universe(struct_file,traj_file)
         u.trajectory[align_frame]
         
-        #if align_sequence:
-        #    protein = u.select_atoms(selection)
-        #    atoms = AtomGroup([],u)
-        #    for i, a in enumerate(protein.residues):
-        #        if seqsel[i]:
-        #            atoms = atoms + a.atoms
-        #    ref = atoms
-        #else:
-        #    ref = u.select_atoms(selection)
-        
-        #align.alignto(ref, groundref, select="name CA", weights="mass")
-
-        #ref.atoms.write(directory_pdb + 'reference_%s.pdb'%prot)
-        #ref = mda.Universe(directory_pdb + 'reference_%s.pdb'%prot).atoms
-
         rmsds = []
         t = []
         nframe = len(u.trajectory)
@@ -125,7 +109,6 @@ def convert_traj_pdb_aligned(protA, protB, struct_file_A, traj_file_A, struct_fi
             sys.stdout.write("\n") 
     return
 
-
 ####
 # Convert the aligned protein structures in PDB format (e.g. from "convert_traj_pdb_aligned") to simplicial meshes
 # 
@@ -137,7 +120,6 @@ def convert_traj_pdb_aligned(protA, protB, struct_file_A, traj_file_A, struct_fi
 # directory_pdb_B = directory for the input pdb files, default = protA_protB/pdb/protB if not specified
 # directory_mesh = directory for the input pdb files, default = protA_protB/mesh/ if not specified
 ####
-
 def calc_radius_pdb(selection='protein',directory=None,prot=None,i_sample=None,directory_pdb=None,filename=None):
     if directory != None and prot != None and i_sample != None:
         pdb_file = '%s/pdb/%s/%s_frame%d.pdb'%(directory,prot,prot,i_sample)
@@ -147,11 +129,10 @@ def calc_radius_pdb(selection='protein',directory=None,prot=None,i_sample=None,d
         else:
             pdb_file = directory_pdb + '/' + filename
     protein = mda.Universe(pdb_file).select_atoms(selection)
-    comp = ComplexFiltration()
-    comp.vertices = protein.positions
-    return comp.calc_radius()
+    meshA = mesh()
+    meshA.vertices = protein.positions
+    return meshA.calc_radius()
 
-import MDAnalysis.transformations as trans
 def convert_pdb_mesh_single(sm_radius, rmax, directory = None, prot = None , i_sample = None, directory_mesh = None, directory_pdb = None, filename = None, selection='protein', verbose = False):
     if directory != None and prot != None and i_sample != None and directory_mesh != None:
         pdb_file = '%s/pdb/%s/%s_frame%d.pdb'%(directory,prot,prot,i_sample)
@@ -167,17 +148,10 @@ def convert_pdb_mesh_single(sm_radius, rmax, directory = None, prot = None , i_s
             sys.stdout.flush()
     u = mda.Universe(pdb_file)
     protein = u.select_atoms(selection)
-    comp = ComplexFiltration()
-    comp.vertices = protein.positions - np.average(protein.positions,axis=0)
-    comp.box = np.append(np.amax(np.fabs(comp.vertices),axis=0)*2+10.0,[90.0,90.0,90.0])
-    comp.vertices += comp.box[:3]/2
-    comp.neighbor_search(cutoff=sm_radius)
-    comp.edge_to_face_list()
-    comp.vertices = protein.positions
-    comp.vertices /= rmax
-    comp.write_mesh_file(filename=msh_file)
+    meshA = mesh()
+    meshA.vertices = protein.positions
+    meshA.convert_vertices_to_mesh(sm_radius=sm_radius,msh_file=msh_file,rmax=rmax)
     return
-
 
 def convert_pdb_mesh(protA, protB, n_sample = 101, sm_radius = 4.0, directory_pdb_A = None, directory_pdb_B = None, directory_mesh = None, parallel = False, n_core = -1, verbose = False):
     
