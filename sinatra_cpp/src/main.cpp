@@ -1,8 +1,5 @@
 // g++ main.cpp -o main -larmadillo -fopenmp -I. -lstdc++fs
-<<<<<<< HEAD
 
-=======
->>>>>>> 58eed95a1351010a064e2695526493d115943615
 #include <iostream>
 #include <fstream>
 #include <string>

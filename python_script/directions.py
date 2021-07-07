@@ -30,10 +30,7 @@ def rodrigues(z,r,j):
         directions[i,:] = z0*np.cos(x)+B*np.sin(x)+C*(1-np.cos(x))
     return directions
 
-<<<<<<< HEAD
-=======
 
->>>>>>> 58eed95a1351010a064e2695526493d115943615
 #  Generate Equidistributed points on a sphere / hemi-sphere.
 #  parameter:
 #      desired_number (int): the desired number of equidistributed points on the 2-sphere.
