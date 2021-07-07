@@ -22,11 +22,7 @@ def logistic_log_likelihood(latent_variables, class_labels):
     return(-np.sum(np.log(1.0+np.exp(latent_variables*class_labels))))
 
 ## Adopted from FastGP::ess
-<<<<<<< HEAD
-def Elliptical_Slice_Sampling(K,y,n_mcmc=100000,burn_in=1000,probit=True,seed=None,verbose=False):
-=======
 def Elliptical_Slice_Sampling(K,y,N_mcmc=100000,burn_in=1000,probit=True,seed=None,verbose=False):
->>>>>>> 58eed95a1351010a064e2695526493d115943615
     if verbose:
         print("Running elliptical slice sampling...")
     if probit:
@@ -37,15 +33,6 @@ def Elliptical_Slice_Sampling(K,y,N_mcmc=100000,burn_in=1000,probit=True,seed=No
     N = y.size
     if isinstance(seed, int):
         np.random.seed(seed)
-<<<<<<< HEAD
-    mcmc_samples = np.zeros((burn_in+n_mcmc,N),dtype=float)
-    norm_samples = np.random.multivariate_normal(mean = np.zeros(n), cov = K, size = burn_in+n_mcmc)
-    unif_samples = np.random.uniform(low = 0, high = 1, size = burn_in+n_mcmc)
-    theta = np.random.uniform(low = 0, high = 2*np.pi, size = burn_in+n_mcmc)
-    theta_min = theta - 2*np.pi
-    theta_max = theta + 2*np.pi
-    for i in range(1,burn_in+n_mcmc):
-=======
     mcmc_samples = np.zeros((burn_in+N_mcmc,N),dtype=float)
     norm_samples = np.random.multivariate_normal(mean = np.zeros(n), cov = K, size = burn_in+N_mcmc)
     unif_samples = np.random.uniform(low = 0, high = 1, size = burn_in+N_mcmc)
@@ -53,7 +40,6 @@ def Elliptical_Slice_Sampling(K,y,N_mcmc=100000,burn_in=1000,probit=True,seed=No
     theta_min = theta - 2*np.pi
     theta_max = theta + 2*np.pi
     for i in range(1,burn_in+N_mcmc):
->>>>>>> 58eed95a1351010a064e2695526493d115943615
         if verbose:
             if i < burn_in:
                 sys.stdout.write('Burning in...\r')
@@ -75,21 +61,13 @@ def Elliptical_Slice_Sampling(K,y,N_mcmc=100000,burn_in=1000,probit=True,seed=No
         sys.stdout.write('\n')
     return mcmc_samples[burn_in:,:]
 
-<<<<<<< HEAD
-def find_rate_variables_with_other_sampling_methods(X,y,bandwidth = 0.01,sampling_method = 'ESS', n_mcmc = 100000,burn_in = 1000,probit = True,seed = None, parallel = False, n_core = -1, verbose = False):
-=======
 def find_rate_variables_with_other_sampling_methods(X,y,bandwidth = 0.01,sampling_method = 'ESS',size = 100000,N_mcmc = 100000,burn_in = 1000,probit = True,seed = None, parallel = False, n_core = -1, verbose = False):
->>>>>>> 58eed95a1351010a064e2695526493d115943615
     n = X.shape[0]
     f = np.zeros(n)
     if verbose:
         sys.stdout.write('Calculating Covariance Matrix...\n')
     Kn = CovarianceMatrix(X.T,bandwidth)
-<<<<<<< HEAD
-    samples = Elliptical_Slice_Sampling(Kn,y,n_mcmc=n_mcmc,burn_in=burn_in,probit=probit,seed=seed,verbose=verbose)
-=======
     samples = Elliptical_Slice_Sampling(Kn,y,N_mcmc=N_mcmc,burn_in=burn_in,probit=probit,seed=seed,verbose=verbose)
->>>>>>> 58eed95a1351010a064e2695526493d115943615
     kld, rates, delta, eff_samp_size = RATE(X=X,f_draws=samples,parallel=parallel,n_core=n_core,verbose=verbose)
     return kld, rates, delta, eff_samp_size
  
