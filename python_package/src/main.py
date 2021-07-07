@@ -94,7 +94,7 @@ convert_traj_pdb_aligned(protA, protB,
         selection=selection, 
         offset=offset, 
         directory=directory,
-        single=True, ## single="True" is for single run purpose, "False" for duplicate runs purpose which groups and names file with the frame offset.
+        single=single, ## single="True" is for single run purpose, "False" for duplicate runs purpose which groups and names file with the frame offset.
         verbose=verbose)
 
 #####################
