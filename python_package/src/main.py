@@ -89,10 +89,10 @@ convert_traj_pdb_aligned(protA, protB,
         traj_file_A=traj_file_A, 
         struct_file_B=struct_file_B, 
         traj_file_B=traj_file_B, 
-        align_frame=0, 
+        align_frame=offset, 
         n_sample=n_sample, 
         selection=selection, 
-        offset=0, 
+        offset=offset, 
         directory=directory,
         single=True, ## single="True" is for single run purpose, "False" for duplicate runs purpose which groups and names file with the frame offset.
         verbose=verbose)
@@ -137,8 +137,8 @@ X, y, not_vacuum = compute_ec_curve_folder(protA,protB,directions,
         n_core=n_core, 
         verbose=verbose)
 
-np.savetxt("%s/%s_%s_%s_%d_%d_%.2f_%d_norm_all.txt"%(directory,ec_type,protA,protB,n_cone,n_direction_per_cone,cap_radius,n_filtration),X)
-np.savetxt("%s/notvacuum_%s_%s_%s_%d_%d_%.2f_%d_norm_all.txt"%(directory,ec_type,protA,protB,n_cone,n_direction_per_cone,cap_radius,n_filtration),not_vacuum)
+np.savetxt("%s/%s_%s_%s_%.1f_%d_%d_%.2f_%d_norm_all.txt"%(directory,ec_type,protA,protB,sm_radius,n_cone,n_direction_per_cone,cap_radius,n_filtration),X)
+np.savetxt("%s/notvacuum_%s_%s_%s_%.1f_%d_%d_%.2f_%d_norm_all.txt"%(directory,ec_type,protA,protB,sm_radius,n_cone,n_direction_per_cone,cap_radius,n_filtration),not_vacuum)
 np.savetxt('%s/%s_%s_label_all.txt'%(directory,protA,protB),y)    
 
 ## RATE calculation for variable selections from the topological summary statistics
@@ -149,7 +149,7 @@ kld, rates, delta, eff_samp_size = find_rate_variables_with_other_sampling_metho
         n_core=n_core,
         verbose=verbose)
 
-np.savetxt("%s/rates_%s_%s_%s_%d_%d_%.2f_%d.txt"%(directory,ec_type,protA,protB,n_cone,n_direction_per_cone,cap_radius,n_filtration),rates)
+np.savetxt("%s/rates_%s_%s_%s_%.1f_%d_%d_%.2f_%d.txt"%(directory,ec_type,protA,protB,sm_radius,n_cone,n_direction_per_cone,cap_radius,n_filtration),rates)
 
 ## reconstruct the RATE values onto the protein structures for visualization
 ## reconstruct probabilities are stored in "Temperature factor" column in the pdb format
@@ -164,11 +164,11 @@ vert_prob = reconstruct_on_multiple_mesh(protA,protB,directions,
         directory_mesh="%s/msh/%s_%.1f"%(directory,protA,sm_radius),
         verbose=verbose)
 
-np.savetxt("%s/vert_prob_DECT_%s_%s_%d_%d_%.2f_%d.txt"%(directory,protA,protB,n_cone,n_direction_per_cone,cap_radius,n_filtration),vert_prob)
+np.savetxt("%s/vert_prob_DECT_%s_%s_%.1f_%d_%d_%.2f_%d.txt"%(directory,protA,protB,sm_radius,n_cone,n_direction_per_cone,cap_radius,n_filtration),vert_prob)
 
 write_vert_prob_on_pdb(vert_prob,
         protA=protA,
         protB=protB,
         selection=selection, 
         pdb_in_file=reference_pdb_file, 
-        pdb_out_file="%s/vert_prob_DECT_%s_%s_%d_%d_%.2f_%d_all.pdb"%(directory,protA,protB,n_cone,n_direction_per_cone,cap_radius,n_filtration))
+        pdb_out_file="%s/vert_prob_DECT_%s_%s_%.1f_%d_%d_%.2f_%d_all.pdb"%(directory,protA,protB,sm_radius,n_cone,n_direction_per_cone,cap_radius,n_filtration))
