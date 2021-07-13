@@ -8,6 +8,7 @@ def sherman_r(A, u, v):
     x = v.T @ A @ u + 1
     return A - ((A @ u) @ (v.T @ A)) * (1./x)
 
+# calculate KLD for column q
 def calc_kld(mu,Lambda,V,q,verbose=False):
     if verbose:
         sys.stdout.write("Calculating KLD(%d)...\r"%q)

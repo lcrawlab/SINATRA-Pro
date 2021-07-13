@@ -2,7 +2,6 @@
 
 import numpy as np, sys
 from scipy.stats import norm
-from RATE import *
 
 def CovarianceMatrix(x,bandwidth=0.01):
     bandwidth = 1./(2*bandwidth**2)
@@ -21,7 +20,7 @@ def probit_log_likelihood(latent_variables, class_labels):
 def logistic_log_likelihood(latent_variables, class_labels):
     return(-np.sum(np.log(1.0+np.exp(latent_variables*class_labels))))
 
-## Adopted from FastGP::ess
+# elliptical slice sampling algorithm adopted from FastGP::ess
 def Elliptical_Slice_Sampling(K,y,n_mcmc=100000,burn_in=1000,probit=True,seed=None,verbose=False):
     if verbose:
         print("Running elliptical slice sampling...")
@@ -61,13 +60,13 @@ def Elliptical_Slice_Sampling(K,y,n_mcmc=100000,burn_in=1000,probit=True,seed=No
         sys.stdout.write('\n')
     return mcmc_samples[burn_in:,:]
 
-def find_rate_variables_with_other_sampling_methods(X,y,bandwidth = 0.01,sampling_method = 'ESS', n_mcmc = 100000,burn_in = 1000,probit = True,seed = None, parallel = False, n_core = -1, verbose = False):
+def calc_rate(X,y,bandwidth = 0.01,sampling_method = 'ESS', n_mcmc = 100000,burn_in = 1000,probit = True,seed = None, parallel = False, n_core = -1, verbose = False):
     n = X.shape[0]
     f = np.zeros(n)
     if verbose:
         sys.stdout.write('Calculating Covariance Matrix...\n')
     Kn = CovarianceMatrix(X.T,bandwidth)
     samples = Elliptical_Slice_Sampling(Kn,y,n_mcmc=n_mcmc,burn_in=burn_in,probit=probit,seed=seed,verbose=verbose)
-    kld, rates, delta, eff_samp_size = RATE(X=X,f_draws=samples,parallel=parallel,n_core=n_core,verbose=verbose)
+    kld, rates, delta, eff_samp_size = RATE.RATE(X=X,f_draws=samples,parallel=parallel,n_core=n_core,verbose=verbose)
     return kld, rates, delta, eff_samp_size
  

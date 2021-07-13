@@ -1,8 +1,9 @@
 #!/bin/python3
-from traj_reader import *
-from euler import *
-from gp import *
-from reconstruction import *
+
+from sinatra_pro.traj_reader import *
+from sinatra_pro.euler import *
+from sinatra_pro.gp import *
+from sinatra_pro.reconstruction import *
 import sys
 import argparse
 
@@ -142,7 +143,7 @@ np.savetxt("%s/notvacuum_%s_%s_%s_%.1f_%d_%d_%.2f_%d_norm_all.txt"%(directory,ec
 np.savetxt('%s/%s_%s_label_all.txt'%(directory,protA,protB),y)    
 
 ## RATE calculation for variable selections from the topological summary statistics
-kld, rates, delta, eff_samp_size = find_rate_variables_with_other_sampling_methods(X,y,
+kld, rates, delta, eff_samp_size = calc_rate(X,y,
         bandwidth=bandwidth,
         n_mcmc=n_mcmc,
         parallel=parallel,

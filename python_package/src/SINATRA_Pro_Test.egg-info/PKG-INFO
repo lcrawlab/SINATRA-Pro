@@ -1,0 +1,15 @@
+Metadata-Version: 2.1
+Name: SINATRA-Pro-Test
+Version: 0.0.10
+Summary: Python3 package for SINATRA Pro
+Home-page: UNKNOWN
+Author: Wai Shing Tang
+License: GNU General Public License v3.0
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: GNU General Public License (GPL)
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+
+UNKNOWN
+

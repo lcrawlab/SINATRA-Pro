@@ -1,7 +1,5 @@
 #!/bin/python3
 
-from mesh import *
-from directions import *
 import os, sys
 import numpy as np
 from fast_histogram import histogram1d
