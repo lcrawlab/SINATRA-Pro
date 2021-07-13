@@ -18,16 +18,16 @@ vector<vector<double> > compute_ec_curve(mesh meshA, vector<vector<double> > dir
     int n_edge = meshA.edge_list.size();
     int n_face = meshA.face_list.size();
     double binsize = 2*ball_radius/(n_filtration-1);
-
-    #pragma omp parallel
+    
+    // #pragma omp parallel
     for(int i_dir=0;i_dir<directions.size();i_dir++)  // For each direction
     {
         // Bin each vertex into a filtration bin and label the vertex with a bin number (vertex function)
         vector<unsigned int> vert_func(n_vertex,0.0);
-        for(int i=0;i<n_vertex;i++)
-            vert_func[i] = (int)floor((dot(meshA.coords[i],directions[i_dir])+ball_radius)/binsize);
+        for(int i_vert=0;i_vert<n_vertex;i_vert++)
+            vert_func[i_vert] = (unsigned int)ceil((dot(meshA.coords[i_vert],directions[i_dir])+ball_radius)/binsize);
         
-        vector<double> V(n_filtration,0), E(n_filtration,0), F(n_filtration,0);
+        vector<double> V(n_filtration,0.0), E(n_filtration,0.0), F(n_filtration,0.0);
        
         // Count number of vertices in each filtration bin 
         for(int i_vert=0;i_vert<n_vertex;i_vert++)
@@ -50,9 +50,10 @@ vector<vector<double> > compute_ec_curve(mesh meshA, vector<vector<double> > dir
         for(int i_face=0;i_face<n_face;i_face++)
         {
             int max_func = 0;
-            for(int j=0;j<meshA.face_list[i_face].size();j++)
+            for(int j=0;j<meshA.face_list[i_face].size();j++) {
                 if (vert_func[meshA.face_list[i_face][j]] > max_func)
                     max_func = vert_func[meshA.face_list[i_face][j]];
+            }
             F[max_func] += 1.0;
         }
 
@@ -61,12 +62,11 @@ vector<vector<double> > compute_ec_curve(mesh meshA, vector<vector<double> > dir
         {
             ec_curves[i_dir][i_fil] = V[i_fil] - E[i_fil] + F[i_fil];
         }
-
-        if (not ec_type.compare("DECT")) // If ec_type == "ECT"
+        if (not ec_type.compare("DECT")) // If ec_type == "DECT"
         {
             for(int i_fil=0;i_fil<n_filtration;i_fil++)
-                ec_curves[i_dir][i_fil] /= binsize;
-        }
+                ec_curves[i_dir][i_fil] /= binsize; 
+        }/*
         else
         {
             // Integrate to compute EC curve
@@ -99,17 +99,18 @@ vector<vector<double> > compute_ec_curve(mesh meshA, vector<vector<double> > dir
                 cout << "Please choose from one of the EC type: ECT / DECT / SECT\n";
             }
         }
+        */
     }
     return ec_curves;
 }
 
-int compute_ec_curve_multiple_files(string mshpath_A, string mshpath_B, vector<vector<double> > directions, int n_filtration, string ec_type="DECT", string y_filename="label.txt", string filesuffix="")
+int compute_ec_curve_multiple_files(string mshpath_A, string mshpath_B, vector<vector<double> > directions, int n_filtration, string ec_type="DECT", string y_filename="label.txt", string ec_filename="")
 {
     double ball_radius = 1.0;
     ofstream ecfile, yfile;
-    ecfile.open(ec_type+filesuffix+".txt");
+    ecfile.open(ec_filename);
     yfile.open(y_filename);
-    vector<vector<double> > ec_matrix;
+    // vector<vector<double> > ec_matrix;
     vector<int> label;
     for (const auto & file : experimental::filesystem::directory_iterator(mshpath_A))
     {
@@ -122,7 +123,7 @@ int compute_ec_curve_multiple_files(string mshpath_A, string mshpath_B, vector<v
             cout << "Calculation EC for " << filename_short << "..." << '\r';
             cout << flush;
             mesh meshA;
-            meshA.read_mesh(filename);
+            meshA.read_mesh(filename);            
             vector<vector<double> > ec_curves = compute_ec_curve(meshA,directions,ball_radius,n_filtration,ec_type);
             //vector<double> flattened(begin(ec_curves[0]), end(ec_curves[0]));
             //for(int i_dir=1;i_dir<ec_curves.size();i_dir++)

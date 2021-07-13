@@ -25,7 +25,7 @@ vector<double> reconstruct_by_sorted_threshold(string mshfile, vector<vector<dou
             for(int j=0;j<n_direction_per_cone;j++)
             {
                 int k = i * n_direction_per_cone + j;
-                unsigned int vert_func = (unsigned int)floor((dot(meshA.coords[i_vert],directions[k])+ball_radius)/binsize);
+                unsigned int vert_func = (unsigned int)ceil((dot(meshA.coords[i_vert],directions[k])+ball_radius)/binsize);
                 if (rates[k*n_filtration+vert_func] < min_rates_direction)
                     min_rates_direction = rates[k*n_filtration+vert_func];                
             }

@@ -108,7 +108,6 @@ class mesh
                     }
                     i_line++;
                 }
-                mshfile.close();
             }
             return 0;
         }
