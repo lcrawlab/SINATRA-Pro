@@ -108,6 +108,26 @@ To run the application,
               -v, --verbose         verbose
               -no, --name_offset    name folder with offset
 
+example:
+
+        python3 -m  sinatra_pro --protA WT --protB R164S \
+                --directory "WT_R164S_65_213_no164sc_2.0" \
+                --n_sample 10 \
+                --struct_file_A "WT.gro" \
+                --traj_file_A "WT.xtc" \
+                --struct_file_B "R164S.gro" \
+                --traj_file_B "R164S.xtc" \
+                --selection "protein and resid 65:213 and not (resid 164 and not backbone)" \
+                --radius 2.0 \
+                --n_cone 4 \
+                --n_direction_per_cone 4 \
+                --cap_radius 0.80 \
+                --ec_type "DECT" \
+                --n_filtration 60 \
+                --n_mcmc 100000 \
+                --parallel \
+                --n_core 4 --verbose
+
 ## Relevant Citations
 
 Wai Shing Tang*, Gabriel Monteiro da Silva*, Henry Kirveslahti, Erin Skeens, Bibo Feng, Timothy Sudijono, Kevin K. Yang, Sayan Mukherjee, Brenda Rubenstein, and Lorin Crawford. Topological Data Analytic Approach for Discovering Biophysical Signatures in Protein Dynamics.
