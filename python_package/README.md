@@ -110,7 +110,7 @@ To run the application,
 
 example:
 
-        python3 -m  sinatra_pro --protA WT --protB R164S \
+        python3 -m sinatra_pro --protA WT --protB R164S \
                 --directory "WT_R164S_65_213_no164sc_2.0" \
                 --n_sample 10 \
                 --struct_file_A "WT.gro" \
