@@ -65,18 +65,19 @@ class mesh:
     
     # Neighbor search using Grid search algorithm
     def neighbor_search(self,cutoff=4.0):
-        max_gridsize = 8000
-        passed = False
-        while not passed:
-            try:
-                nsr = FastNS(cutoff=cutoff,coords=self.vertices,box=self.box,pbc=False,max_gridsize=max_gridsize)
-                passed = True
-            except MemoryError:
-                max_gridsize = int(max_gridsize/2)
-            except:
-                raise
-            if passed:
-                break
+        #max_gridsize = 8000
+        #passed = False
+        #while not passed:
+        #    try:
+        #        nsr = FastNS(cutoff=cutoff,coords=self.vertices,box=self.box,pbc=False,max_gridsize=max_gridsize)
+        #        passed = True
+        #    except MemoryError:
+        #        max_gridsize = int(max_gridsize/2)
+        #    except:
+        #        raise
+        #    if passed:
+        #        break
+        nsr = FastNS(cutoff=cutoff,coords=self.vertices,box=self.box,pbc=False)
         result = nsr.self_search()
         self.edges = result.get_pairs()[::2]
         return 

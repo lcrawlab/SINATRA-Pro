@@ -2,11 +2,11 @@
 
 import argparse, os
 
-from directions import *
-from traj_reader import *
-from euler import *
-from gp import *
-from reconstruction import *
+from sinatra_pro.directions import *
+from sinatra_pro.traj_reader import *
+from sinatra_pro.euler import *
+from sinatra_pro.gp import *
+from sinatra_pro.reconstruction import *
 
 ##########################################################################
 

@@ -5,7 +5,7 @@ with open("README.md", "r", encoding='utf-8') as fh:
 
 setup(
     name='SINATRA Pro Test',
-    version='0.0.12',
+    version='0.0.14',
     description = 'Python3 package for SINATRA Pro',
     long_description = long_description,
     license = 'GNU General Public License v3.0',

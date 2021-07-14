@@ -6,8 +6,7 @@ import MDAnalysis as mda
 from MDAnalysis.analysis import align
 from MDAnalysis.analysis.rms import rmsd
 from MDAnalysis.core.groups import AtomGroup
-
-from mesh import *
+from sinatra_pro.mesh import *
 
 ####
 # Convert MD simulation trajectory to aligned protein structures in PDB format

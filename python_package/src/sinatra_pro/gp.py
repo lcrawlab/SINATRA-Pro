@@ -3,7 +3,7 @@
 import sys
 import numpy as np
 from scipy.stats import norm
-from RATE import *
+from sinatra_pro.RATE import *
 
 def CovarianceMatrix(x,bandwidth=0.01):
     bandwidth = 1./(2*bandwidth**2)

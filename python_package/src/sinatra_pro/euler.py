@@ -1,7 +1,7 @@
 #!/bin/python3
 
 import os, sys
-from mesh import *
+from sinatra_pro.mesh import *
 from fast_histogram import histogram1d
 
 ## Computes the Euler Characteristics (EC) curves in a given direction for a given mesh
