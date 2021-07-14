@@ -3,6 +3,7 @@
 import os, sys
 import numpy as np
 from scipy.stats import rankdata
+from mesh import *
 
 # Reconstruction algorithms
 def reconstruct_by_sorted_threshold(meshfile, directions, rates, n_filtration = 25, n_direction_per_cone = 1, ball_radius = 1.0, by_rank = False, verbose = False):

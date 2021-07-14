@@ -1,6 +1,7 @@
 #!/bin/python3
 
-import numpy as np, sys
+import sys
+import numpy as np
 from scipy.linalg import pinv
 
 # Sherman-Morrison

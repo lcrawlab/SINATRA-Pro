@@ -1,18 +1,21 @@
 from setuptools import setup, find_packages
 
+with open("README.md", "r", encoding='utf-8') as fh:
+    long_description = fh.read()
+
 setup(
-    name='SINATRA Pro Test',    # This is the name of your PyPI-package.
-    version='0.0.10',                          # Update the version number for new releases
+    name='SINATRA Pro Test',
+    version='0.0.12',
     description = 'Python3 package for SINATRA Pro',
-    author='Wai Shing Tang',
+    long_description = long_description,
     license = 'GNU General Public License v3.0',
     license_files = 'LICENSE',
-    #packages=['sinatra_pro'],
     python_requires = '>=3.6',
     install_requires = [ 
         'numpy>=1.18.0',
         'scipy>=1.5.0',
         'mdanalysis>=0.20.0',
+        'fast-histogram>=0.9',
         'joblib>=0.16.0',
         ],
     classifiers = [

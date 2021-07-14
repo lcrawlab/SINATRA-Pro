@@ -1,10 +1,13 @@
 #!/bin/python3
 
+import os, sys
+import numpy as np
 import MDAnalysis as mda
 from MDAnalysis.analysis import align
 from MDAnalysis.analysis.rms import rmsd
 from MDAnalysis.core.groups import AtomGroup
-import numpy as np, os, sys
+
+from mesh import *
 
 ####
 # Convert MD simulation trajectory to aligned protein structures in PDB format

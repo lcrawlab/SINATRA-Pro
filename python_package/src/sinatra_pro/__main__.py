@@ -1,11 +1,12 @@
 #!/bin/python3
 
-from sinatra_pro.traj_reader import *
-from sinatra_pro.euler import *
-from sinatra_pro.gp import *
-from sinatra_pro.reconstruction import *
-import sys
-import argparse
+import argparse, os
+
+from directions import *
+from traj_reader import *
+from euler import *
+from gp import *
+from reconstruction import *
 
 ##########################################################################
 
@@ -24,24 +25,27 @@ parser.add_argument('-dir','--directory', type=str, help='directory for output f
 parser.add_argument('-pl','--parallel', dest='parallel', action='store_true')
 parser.add_argument('-nc','--n_core', type=int, help='number of core for parallel computing, default: use all cores', default=-1)
 
-parser.add_argument('-n','--n_sample', type=int, help='number of sample drawn from trajectory, default: 10',default=10)
+parser.add_argument('-n' ,'--n_sample', type=int, help='number of sample drawn from trajectory, default: 10',default=10)
 parser.add_argument('-of','--offset', type=int, help='starting frame for sample drawn from trajectory, default: 0',default=0)
-parser.add_argument('-s','--selection', type=str, help='selection for protein, default: all protein', default='protein')
-parser.add_argument('-r','--radius', type=float, help='radius for simplicial construction, default: 2.0', default=2.0)
+parser.add_argument('-s' ,'--selection', type=str, help='selection for protein, default: all protein', default='protein')
+parser.add_argument('-r' ,'--radius', type=float, help='radius for simplicial construction, default: 2.0', default=2.0)
+parser.add_argument('-hs','--hemisphere', help='distribute directions over hemisphere instead of whole sphere', dest='hemisphere', action='store_true')
 
 parser.add_argument('-et','--ec_type', type=str, help='type of Euler characteristic measure (DECT/ECT/SECT), default: DECT', default='DECT')
-parser.add_argument('-c','--n_cone', type=int, help='number of cone, default: 1', default=1)
-parser.add_argument('-d','--n_direction_per_cone', type=int, help='number of direction per cone, default: 1', default=1)
-parser.add_argument('-t','--cap_radius', type=float, help='cap radius, default: 0.8', default=0.80)
-parser.add_argument('-l','--n_filtration', type=int, help='number of filtration step, default: 20', default=20)
+parser.add_argument('-c' ,'--n_cone', type=int, help='number of cone, default: 1', default=1)
+parser.add_argument('-d' ,'--n_direction_per_cone', type=int, help='number of direction per cone, default: 1', default=1)
+parser.add_argument('-t' ,'--cap_radius', type=float, help='cap radius, default: 0.8', default=0.80)
+parser.add_argument('-l' ,'--n_filtration', type=int, help='number of filtration step, default: 20', default=20)
 
 parser.add_argument('-bw','--bandwidth', type=float, help='bandwidth for elliptical slice sampling, default: 0.01',default=0.01)
 parser.add_argument('-sm','--sampling_method', type=str, help='sampling method, default: ESS', default='ESS')
 parser.add_argument('-nm','--n_mcmc', type=int, help='number of sample from ESS', default=100000)
+parser.add_argument('-ll' ,'--logistic_likelihood', help='use logistic likelihood instead of probit likelihood', dest='probit', action='store_false')
 
-parser.add_argument('-v','--verbose', dest='verbose', action='store_true')
+parser.add_argument('-v' ,'--verbose', help='verbose', dest='verbose', action='store_true')
+parser.add_argument('-no','--name_offset', help='name folder with offset', dest='single', action='store_false')
 
-parser.set_defaults(parallel=False,verbose=False)
+parser.set_defaults(hemisphere=False,probit=True,parallel=False,verbose=False,single=True)
 args = parser.parse_args()
 
 # Name the variants, just for filename purpose
@@ -74,17 +78,21 @@ n_cone = args.n_cone
 n_direction_per_cone = args.n_direction_per_cone
 cap_radius = args.cap_radius
 n_filtration = args.n_filtration
+hemisphere = args.hemisphere
 
 ## Variable selection parameters
 bandwidth = args.bandwidth
 sampling_method = args.sampling_method
 n_mcmc = args.n_mcmc
+probit = args.probit
 
+single = args.single
 verbose = args.verbose
 
 ##########################################################################
 
 ## Read trajectory file and output aligned protein structures in pdb format
+
 convert_traj_pdb_aligned(protA, protB, 
         struct_file_A=struct_file_A, 
         traj_file_A=traj_file_A, 
@@ -106,6 +114,7 @@ directory_pdb_B = "%s/pdb/%s/"%(directory,protB)
 reference_pdb_file = "%s/%s_frame0.pdb"%(directory_pdb_A,protA) ## which pdb to use for visualization
 
 ## Converted protein structures into simplicial mesehes
+
 convert_pdb_mesh(protA,protB,
         n_sample=n_sample, 
         sm_radius=sm_radius, 
@@ -120,7 +129,7 @@ convert_pdb_mesh(protA,protB,
 directions = generate_equidistributed_cones(n_cone=n_cone,
         n_direction_per_cone=n_direction_per_cone,
         cap_radius=cap_radius,
-        hemisphere=False)
+        hemisphere=hemisphere)
 np.savetxt("%s/directions_%d_%d_%.2f.txt"%(directory,n_cone,n_direction_per_cone,cap_radius),directions)
 
 ## EC calculations to convert simplicial meshes to topological summary statistics
@@ -141,6 +150,7 @@ X, y, not_vacuum = compute_ec_curve_folder(protA,protB,directions,
 np.savetxt("%s/%s_%s_%s_%.1f_%d_%d_%.2f_%d_norm_all.txt"%(directory,ec_type,protA,protB,sm_radius,n_cone,n_direction_per_cone,cap_radius,n_filtration),X)
 np.savetxt("%s/notvacuum_%s_%s_%s_%.1f_%d_%d_%.2f_%d_norm_all.txt"%(directory,ec_type,protA,protB,sm_radius,n_cone,n_direction_per_cone,cap_radius,n_filtration),not_vacuum)
 np.savetxt('%s/%s_%s_label_all.txt'%(directory,protA,protB),y)    
+
 
 ## RATE calculation for variable selections from the topological summary statistics
 kld, rates, delta, eff_samp_size = calc_rate(X,y,

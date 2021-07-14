@@ -1,7 +1,9 @@
 #!/bin/python3
 
-import numpy as np, sys
+import sys
+import numpy as np
 from scipy.stats import norm
+from RATE import *
 
 def CovarianceMatrix(x,bandwidth=0.01):
     bandwidth = 1./(2*bandwidth**2)
@@ -67,6 +69,6 @@ def calc_rate(X,y,bandwidth = 0.01,sampling_method = 'ESS', n_mcmc = 100000,burn
         sys.stdout.write('Calculating Covariance Matrix...\n')
     Kn = CovarianceMatrix(X.T,bandwidth)
     samples = Elliptical_Slice_Sampling(Kn,y,n_mcmc=n_mcmc,burn_in=burn_in,probit=probit,seed=seed,verbose=verbose)
-    kld, rates, delta, eff_samp_size = RATE.RATE(X=X,f_draws=samples,parallel=parallel,n_core=n_core,verbose=verbose)
+    kld, rates, delta, eff_samp_size = RATE(X=X,f_draws=samples,parallel=parallel,n_core=n_core,verbose=verbose)
     return kld, rates, delta, eff_samp_size
  

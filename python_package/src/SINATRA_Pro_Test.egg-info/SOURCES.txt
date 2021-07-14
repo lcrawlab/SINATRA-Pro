@@ -9,6 +9,7 @@ src/SINATRA_Pro_Test.egg-info/requires.txt
 src/SINATRA_Pro_Test.egg-info/top_level.txt
 src/sinatra_pro/RATE.py
 src/sinatra_pro/__init__.py
+src/sinatra_pro/__main__.py
 src/sinatra_pro/directions.py
 src/sinatra_pro/euler.py
 src/sinatra_pro/gp.py

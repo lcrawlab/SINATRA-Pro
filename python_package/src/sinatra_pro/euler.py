@@ -1,7 +1,7 @@
 #!/bin/python3
 
 import os, sys
-import numpy as np
+from mesh import *
 from fast_histogram import histogram1d
 
 ## Computes the Euler Characteristics (EC) curves in a given direction for a given mesh
@@ -39,7 +39,7 @@ def compute_ec_curve_single(mesh, direction, ball_radius, n_filtration = 25, ec_
         F = histogram1d(face_function,range=[-ball_radius,ball_radius],bins=(n_filtration-1))
     else:
         F = 0
-        
+    
     eulers[1:] = V - E + F
 
     if ec_type == "ECT":
