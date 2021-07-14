@@ -71,7 +71,16 @@ To run the application,
                                     trajectory file for protein B (.xtc)
               -dir DIRECTORY, --directory DIRECTORY
                                     directory for output files
+              -fp, --from_pdb       start from sets of PDB structures instead of
+                                        trajectories
+              -pa PDBPATH_A, --pdbpath_A PDBPATH_A
+                                    directory containing PDB structures for protein A
+              -pb PDBPATH_B, --pdbpath_B PDBPATH_B
+                                    directory containing PDB structures for protein B
+              -pr PDB_REFERENCE, --pdb_reference PDB_REFERENCE
+                                    PDB structure for visualization from protein A
               -pl, --parallel
+                                    use multiple CPU cores for calculations
               -nc N_CORE, --n_core N_CORE
                                     number of core for parallel computing, default: use
                                     all cores
@@ -110,6 +119,8 @@ To run the application,
 
 example:
 
+Starting from MD trajectories
+
         python3 -m sinatra_pro --protA WT --protB R164S \
                 --directory "WT_R164S_65_213_no164sc_2.0" \
                 --n_sample 10 \
@@ -127,6 +138,26 @@ example:
                 --n_mcmc 100000 \
                 --parallel \
                 --n_core 4 --verbose
+
+Starting from aligned PDB structures
+
+        python3 -m sinatra_pro --protA WT --protB R164S \
+                --directory "WT_R164S_65_230_2.0" \
+                --n_sample 10 \
+                --from_pdb \
+                --pdbpath_A "WT_R164S_65_230_2.0/pdb/WT_offset_0/" \
+                --pdbpath_B "WT_R164S_65_230_2.0/pdb/R164S_offset_0/" \
+                --pdb_reference "WT_R164S_65_230_2.0/pdb/WT_offset_0/WT_frame0.pdb" \
+                --radius 2.0 \
+                --n_cone 1 \
+                --n_direction_per_cone 1 \
+                --cap_radius 0.80 \
+                --ec_type "DECT" \
+                --n_filtration 20 \
+                --n_mcmc 10000 \
+                --parallel \
+                --n_core 4 --verbose
+
 
 ## Relevant Citations
 
