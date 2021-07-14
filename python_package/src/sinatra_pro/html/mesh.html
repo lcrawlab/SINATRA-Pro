@@ -1,0 +1,833 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>mesh API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>mesh</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">#!/bin/python3
+
+import numpy as np
+from scipy.spatial import distance
+from MDAnalysis.lib.nsgrid import FastNS, NSResults
+import multiprocessing
+from joblib import Parallel, delayed
+
+class mesh:
+    
+    def __init__(self):
+        self.vertices = []
+        &#34;&#34;&#34;List of coordinates of vertices&#34;&#34;&#34;
+        self.n_vertices = 0
+        &#34;&#34;&#34;Number of vertices&#34;&#34;&#34;
+        self.edges = []
+        &#34;&#34;&#34;List of indices of connected edges&#34;&#34;&#34;
+        self.n_edge = 0
+        &#34;&#34;&#34;Number of edges&#34;&#34;&#34;
+        self.faces = []
+        &#34;&#34;&#34;List of indices of constructed faces&#34;&#34;&#34;
+        self.n_face = 0
+        &#34;&#34;&#34;Number of faces&#34;&#34;&#34;
+        return
+    
+
+    def calc_radius(self):
+        &#34;&#34;&#34;Calculate distance of the vertex furthest away from origin &#34;&#34;&#34;
+        return np.amax(np.linalg.norm(self.vertices,axis=1))
+    
+    def normalize(self):
+        &#34;&#34;&#34;Normalize vertices to the unit sphere &#34;&#34;&#34;
+        rmax = self.calc_radius()
+        self.vertices /= rmax
+        return
+   
+    def centering(self):
+        &#34;&#34;&#34;Center protein to origin by center of geometry&#34;&#34;&#34;
+        center = np.mean(self.vertices,axis=0) # center of geometry
+        self.vertices = self.vertices - center
+        return 
+    
+    def import_vertices_from_file(self, filename):
+        &#34;&#34;&#34;Read positions of vertices from file&#34;&#34;&#34;
+        self.vertices = np.loadtxt(filename,usecols=(0,1,2))
+        self.n_vertices = self.vertices.shape[0]
+        return
+
+    def calc_distance_matrix(self):
+        &#34;&#34;&#34;Calculate distance matrix&#34;&#34;&#34;
+        self.n_vertices = self.vertices.shape[0]
+        # calculate self distance matrix among vertices
+        self.distance_matrix = distance.pdist(self.vertices) 
+        # generate pair list that matches the format of the distance matrix from scipy
+        # i.e. [[0,1],[0,2] ....,[0,N],[1,2],...,[N-2,N-1]]
+        pairs = []
+        for i in range(self.n_vertices-1):
+            for j in range(i+1,self.n_vertices):
+                pairs.append([i,j])
+        self.pairs = np.array(pairs) 
+        # sort both pair list and distance matrix by distance
+        sorted_filter = np.argsort(self.distance_matrix)
+        self.distance_matrix = self.distance_matrix[sorted_filter]
+        self.pairs = self.pairs[sorted_filter]     
+        return
+    
+    def get_edge_list(self, radius):
+        &#34;&#34;&#34;Output list of edges within distance cutoff from sorted distance matrix&#34;&#34;&#34;
+        pair_list = np.argmax(self.distance_matrix &gt; radius)
+        return self.pairs[:pair_list], self.distance_matrix[:pair_list]
+    
+    def neighbor_search(self,cutoff=4.0):
+        &#34;&#34;&#34;
+        Neighbor search using Neighbor Grid Search (FastNS) algorithm from MDAnalysis. 
+        
+        It generates a list of indices of pairs of vertices that are within `cutoff` apart, 
+        then save the list as list of edges for the mesh.
+        &#34;&#34;&#34;
+        nsr = FastNS(cutoff=cutoff,coords=self.vertices,box=self.box,pbc=False)
+        result = nsr.self_search()
+        self.edges = result.get_pairs()[::2]
+        return 
+    
+    def edge_to_face_list(self):
+        &#34;&#34;&#34;
+        Convert edge list to face list
+
+        Iterate through list of connected edges to look for any 3 edges that enclose a triangle. 
+        Such enclosed triangles are constructed as faces.
+        &#34;&#34;&#34;
+        self.n_vertices = self.vertices.shape[0]
+        self.connections = [set() for i in range(self.n_vertices)]
+        for edge in self.edges:
+            self.connections[edge[0]].add(edge[1])
+            self.connections[edge[1]].add(edge[0])
+        self.faces = []
+        self.checked = set()
+        for u in range(self.n_vertices):
+            self.checked.add(u)
+            for v in self.connections[u] - self.checked:
+                for s in self.connections[u] &amp; self.connections[v]:
+                    if s &gt; v and v &gt; u:
+                        self.faces.append([u,v,s])
+        self.faces = np.array(self.faces)
+        return
+     
+    def read_mesh_file(self,filename=&#39;output.mesh&#39;):
+        &#34;&#34;&#34;Read topology from .msh file&#34;&#34;&#34;
+        n_line = 0
+        i_v = 0
+        i_e = 0
+        i_f = 0
+        with open(filename,&#39;r&#39;) as f:
+            n_line = 0
+            for line in f:
+                p = list(filter(lambda x: x != &#39;&#39;,line.strip().split(&#39; &#39;)))
+                if n_line == 0:
+                    self.n_vertex = int(p[0])
+                    self.n_edge = int(p[1])
+                    self.n_face = int(p[2])
+                    self.vertices = np.zeros((self.n_vertex,3),dtype=float)
+                    self.faces = np.zeros((self.n_face,3),dtype=int)
+                    self.edges = np.zeros((self.n_edge,2),dtype=int)
+                elif n_line &lt; self.n_vertex + 1:
+                    if i_v &lt; self.n_vertex:
+                        for i in range(3):
+                            self.vertices[i_v][i] = float(p[i])
+                        i_v += 1
+                elif n_line &lt; self.n_vertex + self.n_edge + 1:
+                    if i_e &lt; self.n_edge:
+                        for i in range(2):
+                            self.edges[i_e][i] = int(p[i])
+                        i_e += 1
+                else:
+                    if i_f &lt; self.n_face:
+                        for i in range(int(p[0])):
+                            self.faces[i_f][i] = int(p[i+1])
+                        i_f += 1
+                n_line += 1
+        return 
+   
+    def write_mesh_file(self,filename=&#39;output.mesh&#39;):
+        &#34;&#34;&#34;Write topology into .msh file&#34;&#34;&#34;
+        with open(filename,&#39;w&#39;) as f:
+            f.write(&#39;%d %d %d\n&#39;%(self.vertices.shape[0],self.edges.shape[0],self.faces.shape[0]))
+            for vertex in self.vertices:
+                f.write(&#39;%.6f %.6f %.6f\n&#39;%(vertex[0],vertex[1],vertex[2]))
+            for edge in self.edges:
+                f.write(&#39;%d %d\n&#39;%(edge[0],edge[1]))
+            for face in self.faces:
+                f.write(&#39;%d  %d %d %d  \n&#39;%(len(face),face[0],face[1],face[2]))
+        return
+   
+    def write_off_file(self,filename=&#39;output.off&#39;):
+        &#34;&#34;&#34;Write topology into .off file for visualization&#34;&#34;&#34;
+        with open(filename,&#39;w&#39;) as f:
+            f.write(&#39;OFF\n&#39;)
+            f.write(&#39;%d %d %d\n&#39;%(self.vertices.shape[0],self.faces.shape[0],self.edges.shape[0]))
+            for vertex in self.vertices:
+                f.write(&#39;%.6f %.6f %.6f\n&#39;%(vertex[0],vertex[1],vertex[2]))
+            for face in self.faces:
+                f.write(&#39;%d  %d %d %d  \n&#39;%(len(face),face[0],face[1],face[2]))
+        return
+    
+    def convert_vertices_to_mesh(self,sm_radius=2.0,msh_file=&#39;mesh.msh&#39;,rmax=1.0):
+        &#34;&#34;&#34;
+        Convert set of vertices to a simplicial complex by connecting edges and faces
+        
+        `sm_radius` is the radius cutoff for constructing simplicial complices. 
+        Pairs of vertices closer than `sm_radius` Angstrom apart are connected to form edges. 
+
+        `msh_file` is the filename for output .msh files.
+
+        `rmax` is the radius of the largest mesh used to normalize all meshes to the same unit sphere. 
+        &#34;&#34;&#34;
+        # position vertices for grid search algorithm
+        temp = self.vertices.copy()
+        self.vertices -= np.average(self.vertices,axis=0)
+        self.box = np.append(np.amax(np.fabs(self.vertices),axis=0)*2+1.0,[90.0,90.0,90.0]) 
+        self.vertices += self.box[:3]/2
+        
+        self.neighbor_search(cutoff=sm_radius) # neighbor grid search to identify vertex pairs within r &lt; cutoff apart
+        self.edge_to_face_list() # generate faces enclosed by any 3 edges
+        self.vertices = temp 
+        self.vertices /= rmax # normalized generated meshes to the specified unit sphere
+        self.write_mesh_file(filename=msh_file) 
+        return
+    
+    def generate_random_vertices(self, n_vertices):
+        &#34;&#34;&#34;Generate N random vertices on [0,1],[0,1] for testing purpose&#34;&#34;&#34;
+        np.random.seed(0)
+        self.n_vertices = n_vertices
+        vertices = []
+        for i in range(n_vertices):
+            vertice = []
+            for k in range(3):
+                vertice.append(np.random.random())
+            vertices.append(vertice)
+        vertices = np.array(vertices)
+        self.vertices = vertices
+        return</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="mesh.mesh"><code class="flex name class">
+<span>class <span class="ident">mesh</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class mesh:
+    
+    def __init__(self):
+        self.vertices = []
+        &#34;&#34;&#34;List of coordinates of vertices&#34;&#34;&#34;
+        self.n_vertices = 0
+        &#34;&#34;&#34;Number of vertices&#34;&#34;&#34;
+        self.edges = []
+        &#34;&#34;&#34;List of indices of connected edges&#34;&#34;&#34;
+        self.n_edge = 0
+        &#34;&#34;&#34;Number of edges&#34;&#34;&#34;
+        self.faces = []
+        &#34;&#34;&#34;List of indices of constructed faces&#34;&#34;&#34;
+        self.n_face = 0
+        &#34;&#34;&#34;Number of faces&#34;&#34;&#34;
+        return
+    
+
+    def calc_radius(self):
+        &#34;&#34;&#34;Calculate distance of the vertex furthest away from origin &#34;&#34;&#34;
+        return np.amax(np.linalg.norm(self.vertices,axis=1))
+    
+    def normalize(self):
+        &#34;&#34;&#34;Normalize vertices to the unit sphere &#34;&#34;&#34;
+        rmax = self.calc_radius()
+        self.vertices /= rmax
+        return
+   
+    def centering(self):
+        &#34;&#34;&#34;Center protein to origin by center of geometry&#34;&#34;&#34;
+        center = np.mean(self.vertices,axis=0) # center of geometry
+        self.vertices = self.vertices - center
+        return 
+    
+    def import_vertices_from_file(self, filename):
+        &#34;&#34;&#34;Read positions of vertices from file&#34;&#34;&#34;
+        self.vertices = np.loadtxt(filename,usecols=(0,1,2))
+        self.n_vertices = self.vertices.shape[0]
+        return
+
+    def calc_distance_matrix(self):
+        &#34;&#34;&#34;Calculate distance matrix&#34;&#34;&#34;
+        self.n_vertices = self.vertices.shape[0]
+        # calculate self distance matrix among vertices
+        self.distance_matrix = distance.pdist(self.vertices) 
+        # generate pair list that matches the format of the distance matrix from scipy
+        # i.e. [[0,1],[0,2] ....,[0,N],[1,2],...,[N-2,N-1]]
+        pairs = []
+        for i in range(self.n_vertices-1):
+            for j in range(i+1,self.n_vertices):
+                pairs.append([i,j])
+        self.pairs = np.array(pairs) 
+        # sort both pair list and distance matrix by distance
+        sorted_filter = np.argsort(self.distance_matrix)
+        self.distance_matrix = self.distance_matrix[sorted_filter]
+        self.pairs = self.pairs[sorted_filter]     
+        return
+    
+    def get_edge_list(self, radius):
+        &#34;&#34;&#34;Output list of edges within distance cutoff from sorted distance matrix&#34;&#34;&#34;
+        pair_list = np.argmax(self.distance_matrix &gt; radius)
+        return self.pairs[:pair_list], self.distance_matrix[:pair_list]
+    
+    def neighbor_search(self,cutoff=4.0):
+        &#34;&#34;&#34;
+        Neighbor search using Neighbor Grid Search (FastNS) algorithm from MDAnalysis. 
+        
+        It generates a list of indices of pairs of vertices that are within `cutoff` apart, 
+        then save the list as list of edges for the mesh.
+        &#34;&#34;&#34;
+        nsr = FastNS(cutoff=cutoff,coords=self.vertices,box=self.box,pbc=False)
+        result = nsr.self_search()
+        self.edges = result.get_pairs()[::2]
+        return 
+    
+    def edge_to_face_list(self):
+        &#34;&#34;&#34;
+        Convert edge list to face list
+
+        Iterate through list of connected edges to look for any 3 edges that enclose a triangle. 
+        Such enclosed triangles are constructed as faces.
+        &#34;&#34;&#34;
+        self.n_vertices = self.vertices.shape[0]
+        self.connections = [set() for i in range(self.n_vertices)]
+        for edge in self.edges:
+            self.connections[edge[0]].add(edge[1])
+            self.connections[edge[1]].add(edge[0])
+        self.faces = []
+        self.checked = set()
+        for u in range(self.n_vertices):
+            self.checked.add(u)
+            for v in self.connections[u] - self.checked:
+                for s in self.connections[u] &amp; self.connections[v]:
+                    if s &gt; v and v &gt; u:
+                        self.faces.append([u,v,s])
+        self.faces = np.array(self.faces)
+        return
+     
+    def read_mesh_file(self,filename=&#39;output.mesh&#39;):
+        &#34;&#34;&#34;Read topology from .msh file&#34;&#34;&#34;
+        n_line = 0
+        i_v = 0
+        i_e = 0
+        i_f = 0
+        with open(filename,&#39;r&#39;) as f:
+            n_line = 0
+            for line in f:
+                p = list(filter(lambda x: x != &#39;&#39;,line.strip().split(&#39; &#39;)))
+                if n_line == 0:
+                    self.n_vertex = int(p[0])
+                    self.n_edge = int(p[1])
+                    self.n_face = int(p[2])
+                    self.vertices = np.zeros((self.n_vertex,3),dtype=float)
+                    self.faces = np.zeros((self.n_face,3),dtype=int)
+                    self.edges = np.zeros((self.n_edge,2),dtype=int)
+                elif n_line &lt; self.n_vertex + 1:
+                    if i_v &lt; self.n_vertex:
+                        for i in range(3):
+                            self.vertices[i_v][i] = float(p[i])
+                        i_v += 1
+                elif n_line &lt; self.n_vertex + self.n_edge + 1:
+                    if i_e &lt; self.n_edge:
+                        for i in range(2):
+                            self.edges[i_e][i] = int(p[i])
+                        i_e += 1
+                else:
+                    if i_f &lt; self.n_face:
+                        for i in range(int(p[0])):
+                            self.faces[i_f][i] = int(p[i+1])
+                        i_f += 1
+                n_line += 1
+        return 
+   
+    def write_mesh_file(self,filename=&#39;output.mesh&#39;):
+        &#34;&#34;&#34;Write topology into .msh file&#34;&#34;&#34;
+        with open(filename,&#39;w&#39;) as f:
+            f.write(&#39;%d %d %d\n&#39;%(self.vertices.shape[0],self.edges.shape[0],self.faces.shape[0]))
+            for vertex in self.vertices:
+                f.write(&#39;%.6f %.6f %.6f\n&#39;%(vertex[0],vertex[1],vertex[2]))
+            for edge in self.edges:
+                f.write(&#39;%d %d\n&#39;%(edge[0],edge[1]))
+            for face in self.faces:
+                f.write(&#39;%d  %d %d %d  \n&#39;%(len(face),face[0],face[1],face[2]))
+        return
+   
+    def write_off_file(self,filename=&#39;output.off&#39;):
+        &#34;&#34;&#34;Write topology into .off file for visualization&#34;&#34;&#34;
+        with open(filename,&#39;w&#39;) as f:
+            f.write(&#39;OFF\n&#39;)
+            f.write(&#39;%d %d %d\n&#39;%(self.vertices.shape[0],self.faces.shape[0],self.edges.shape[0]))
+            for vertex in self.vertices:
+                f.write(&#39;%.6f %.6f %.6f\n&#39;%(vertex[0],vertex[1],vertex[2]))
+            for face in self.faces:
+                f.write(&#39;%d  %d %d %d  \n&#39;%(len(face),face[0],face[1],face[2]))
+        return
+    
+    def convert_vertices_to_mesh(self,sm_radius=2.0,msh_file=&#39;mesh.msh&#39;,rmax=1.0):
+        &#34;&#34;&#34;
+        Convert set of vertices to a simplicial complex by connecting edges and faces
+        
+        `sm_radius` is the radius cutoff for constructing simplicial complices. 
+        Pairs of vertices closer than `sm_radius` Angstrom apart are connected to form edges. 
+
+        `msh_file` is the filename for output .msh files.
+
+        `rmax` is the radius of the largest mesh used to normalize all meshes to the same unit sphere. 
+        &#34;&#34;&#34;
+        # position vertices for grid search algorithm
+        temp = self.vertices.copy()
+        self.vertices -= np.average(self.vertices,axis=0)
+        self.box = np.append(np.amax(np.fabs(self.vertices),axis=0)*2+1.0,[90.0,90.0,90.0]) 
+        self.vertices += self.box[:3]/2
+        
+        self.neighbor_search(cutoff=sm_radius) # neighbor grid search to identify vertex pairs within r &lt; cutoff apart
+        self.edge_to_face_list() # generate faces enclosed by any 3 edges
+        self.vertices = temp 
+        self.vertices /= rmax # normalized generated meshes to the specified unit sphere
+        self.write_mesh_file(filename=msh_file) 
+        return
+    
+    def generate_random_vertices(self, n_vertices):
+        &#34;&#34;&#34;Generate N random vertices on [0,1],[0,1] for testing purpose&#34;&#34;&#34;
+        np.random.seed(0)
+        self.n_vertices = n_vertices
+        vertices = []
+        for i in range(n_vertices):
+            vertice = []
+            for k in range(3):
+                vertice.append(np.random.random())
+            vertices.append(vertice)
+        vertices = np.array(vertices)
+        self.vertices = vertices
+        return</code></pre>
+</details>
+<h3>Instance variables</h3>
+<dl>
+<dt id="mesh.mesh.edges"><code class="name">var <span class="ident">edges</span></code></dt>
+<dd>
+<div class="desc"><p>List of indices of connected edges</p></div>
+</dd>
+<dt id="mesh.mesh.faces"><code class="name">var <span class="ident">faces</span></code></dt>
+<dd>
+<div class="desc"><p>List of indices of constructed faces</p></div>
+</dd>
+<dt id="mesh.mesh.n_edge"><code class="name">var <span class="ident">n_edge</span></code></dt>
+<dd>
+<div class="desc"><p>Number of edges</p></div>
+</dd>
+<dt id="mesh.mesh.n_face"><code class="name">var <span class="ident">n_face</span></code></dt>
+<dd>
+<div class="desc"><p>Number of faces</p></div>
+</dd>
+<dt id="mesh.mesh.n_vertices"><code class="name">var <span class="ident">n_vertices</span></code></dt>
+<dd>
+<div class="desc"><p>Number of vertices</p></div>
+</dd>
+<dt id="mesh.mesh.vertices"><code class="name">var <span class="ident">vertices</span></code></dt>
+<dd>
+<div class="desc"><p>List of coordinates of vertices</p></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="mesh.mesh.calc_distance_matrix"><code class="name flex">
+<span>def <span class="ident">calc_distance_matrix</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calculate distance matrix</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def calc_distance_matrix(self):
+    &#34;&#34;&#34;Calculate distance matrix&#34;&#34;&#34;
+    self.n_vertices = self.vertices.shape[0]
+    # calculate self distance matrix among vertices
+    self.distance_matrix = distance.pdist(self.vertices) 
+    # generate pair list that matches the format of the distance matrix from scipy
+    # i.e. [[0,1],[0,2] ....,[0,N],[1,2],...,[N-2,N-1]]
+    pairs = []
+    for i in range(self.n_vertices-1):
+        for j in range(i+1,self.n_vertices):
+            pairs.append([i,j])
+    self.pairs = np.array(pairs) 
+    # sort both pair list and distance matrix by distance
+    sorted_filter = np.argsort(self.distance_matrix)
+    self.distance_matrix = self.distance_matrix[sorted_filter]
+    self.pairs = self.pairs[sorted_filter]     
+    return</code></pre>
+</details>
+</dd>
+<dt id="mesh.mesh.calc_radius"><code class="name flex">
+<span>def <span class="ident">calc_radius</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calculate distance of the vertex furthest away from origin</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def calc_radius(self):
+    &#34;&#34;&#34;Calculate distance of the vertex furthest away from origin &#34;&#34;&#34;
+    return np.amax(np.linalg.norm(self.vertices,axis=1))</code></pre>
+</details>
+</dd>
+<dt id="mesh.mesh.centering"><code class="name flex">
+<span>def <span class="ident">centering</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Center protein to origin by center of geometry</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def centering(self):
+    &#34;&#34;&#34;Center protein to origin by center of geometry&#34;&#34;&#34;
+    center = np.mean(self.vertices,axis=0) # center of geometry
+    self.vertices = self.vertices - center
+    return </code></pre>
+</details>
+</dd>
+<dt id="mesh.mesh.convert_vertices_to_mesh"><code class="name flex">
+<span>def <span class="ident">convert_vertices_to_mesh</span></span>(<span>self, sm_radius=2.0, msh_file='mesh.msh', rmax=1.0)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert set of vertices to a simplicial complex by connecting edges and faces</p>
+<p><code>sm_radius</code> is the radius cutoff for constructing simplicial complices.
+Pairs of vertices closer than <code>sm_radius</code> Angstrom apart are connected to form edges. </p>
+<p><code>msh_file</code> is the filename for output .msh files.</p>
+<p><code>rmax</code> is the radius of the largest mesh used to normalize all meshes to the same unit sphere.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def convert_vertices_to_mesh(self,sm_radius=2.0,msh_file=&#39;mesh.msh&#39;,rmax=1.0):
+    &#34;&#34;&#34;
+    Convert set of vertices to a simplicial complex by connecting edges and faces
+    
+    `sm_radius` is the radius cutoff for constructing simplicial complices. 
+    Pairs of vertices closer than `sm_radius` Angstrom apart are connected to form edges. 
+
+    `msh_file` is the filename for output .msh files.
+
+    `rmax` is the radius of the largest mesh used to normalize all meshes to the same unit sphere. 
+    &#34;&#34;&#34;
+    # position vertices for grid search algorithm
+    temp = self.vertices.copy()
+    self.vertices -= np.average(self.vertices,axis=0)
+    self.box = np.append(np.amax(np.fabs(self.vertices),axis=0)*2+1.0,[90.0,90.0,90.0]) 
+    self.vertices += self.box[:3]/2
+    
+    self.neighbor_search(cutoff=sm_radius) # neighbor grid search to identify vertex pairs within r &lt; cutoff apart
+    self.edge_to_face_list() # generate faces enclosed by any 3 edges
+    self.vertices = temp 
+    self.vertices /= rmax # normalized generated meshes to the specified unit sphere
+    self.write_mesh_file(filename=msh_file) 
+    return</code></pre>
+</details>
+</dd>
+<dt id="mesh.mesh.edge_to_face_list"><code class="name flex">
+<span>def <span class="ident">edge_to_face_list</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert edge list to face list</p>
+<p>Iterate through list of connected edges to look for any 3 edges that enclose a triangle.
+Such enclosed triangles are constructed as faces.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def edge_to_face_list(self):
+    &#34;&#34;&#34;
+    Convert edge list to face list
+
+    Iterate through list of connected edges to look for any 3 edges that enclose a triangle. 
+    Such enclosed triangles are constructed as faces.
+    &#34;&#34;&#34;
+    self.n_vertices = self.vertices.shape[0]
+    self.connections = [set() for i in range(self.n_vertices)]
+    for edge in self.edges:
+        self.connections[edge[0]].add(edge[1])
+        self.connections[edge[1]].add(edge[0])
+    self.faces = []
+    self.checked = set()
+    for u in range(self.n_vertices):
+        self.checked.add(u)
+        for v in self.connections[u] - self.checked:
+            for s in self.connections[u] &amp; self.connections[v]:
+                if s &gt; v and v &gt; u:
+                    self.faces.append([u,v,s])
+    self.faces = np.array(self.faces)
+    return</code></pre>
+</details>
+</dd>
+<dt id="mesh.mesh.generate_random_vertices"><code class="name flex">
+<span>def <span class="ident">generate_random_vertices</span></span>(<span>self, n_vertices)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generate N random vertices on [0,1],[0,1] for testing purpose</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generate_random_vertices(self, n_vertices):
+    &#34;&#34;&#34;Generate N random vertices on [0,1],[0,1] for testing purpose&#34;&#34;&#34;
+    np.random.seed(0)
+    self.n_vertices = n_vertices
+    vertices = []
+    for i in range(n_vertices):
+        vertice = []
+        for k in range(3):
+            vertice.append(np.random.random())
+        vertices.append(vertice)
+    vertices = np.array(vertices)
+    self.vertices = vertices
+    return</code></pre>
+</details>
+</dd>
+<dt id="mesh.mesh.get_edge_list"><code class="name flex">
+<span>def <span class="ident">get_edge_list</span></span>(<span>self, radius)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Output list of edges within distance cutoff from sorted distance matrix</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_edge_list(self, radius):
+    &#34;&#34;&#34;Output list of edges within distance cutoff from sorted distance matrix&#34;&#34;&#34;
+    pair_list = np.argmax(self.distance_matrix &gt; radius)
+    return self.pairs[:pair_list], self.distance_matrix[:pair_list]</code></pre>
+</details>
+</dd>
+<dt id="mesh.mesh.import_vertices_from_file"><code class="name flex">
+<span>def <span class="ident">import_vertices_from_file</span></span>(<span>self, filename)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Read positions of vertices from file</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def import_vertices_from_file(self, filename):
+    &#34;&#34;&#34;Read positions of vertices from file&#34;&#34;&#34;
+    self.vertices = np.loadtxt(filename,usecols=(0,1,2))
+    self.n_vertices = self.vertices.shape[0]
+    return</code></pre>
+</details>
+</dd>
+<dt id="mesh.mesh.neighbor_search"><code class="name flex">
+<span>def <span class="ident">neighbor_search</span></span>(<span>self, cutoff=4.0)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Neighbor search using Neighbor Grid Search (FastNS) algorithm from MDAnalysis. </p>
+<p>It generates a list of indices of pairs of vertices that are within <code>cutoff</code> apart,
+then save the list as list of edges for the mesh.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def neighbor_search(self,cutoff=4.0):
+    &#34;&#34;&#34;
+    Neighbor search using Neighbor Grid Search (FastNS) algorithm from MDAnalysis. 
+    
+    It generates a list of indices of pairs of vertices that are within `cutoff` apart, 
+    then save the list as list of edges for the mesh.
+    &#34;&#34;&#34;
+    nsr = FastNS(cutoff=cutoff,coords=self.vertices,box=self.box,pbc=False)
+    result = nsr.self_search()
+    self.edges = result.get_pairs()[::2]
+    return </code></pre>
+</details>
+</dd>
+<dt id="mesh.mesh.normalize"><code class="name flex">
+<span>def <span class="ident">normalize</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Normalize vertices to the unit sphere</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def normalize(self):
+    &#34;&#34;&#34;Normalize vertices to the unit sphere &#34;&#34;&#34;
+    rmax = self.calc_radius()
+    self.vertices /= rmax
+    return</code></pre>
+</details>
+</dd>
+<dt id="mesh.mesh.read_mesh_file"><code class="name flex">
+<span>def <span class="ident">read_mesh_file</span></span>(<span>self, filename='output.mesh')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Read topology from .msh file</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def read_mesh_file(self,filename=&#39;output.mesh&#39;):
+    &#34;&#34;&#34;Read topology from .msh file&#34;&#34;&#34;
+    n_line = 0
+    i_v = 0
+    i_e = 0
+    i_f = 0
+    with open(filename,&#39;r&#39;) as f:
+        n_line = 0
+        for line in f:
+            p = list(filter(lambda x: x != &#39;&#39;,line.strip().split(&#39; &#39;)))
+            if n_line == 0:
+                self.n_vertex = int(p[0])
+                self.n_edge = int(p[1])
+                self.n_face = int(p[2])
+                self.vertices = np.zeros((self.n_vertex,3),dtype=float)
+                self.faces = np.zeros((self.n_face,3),dtype=int)
+                self.edges = np.zeros((self.n_edge,2),dtype=int)
+            elif n_line &lt; self.n_vertex + 1:
+                if i_v &lt; self.n_vertex:
+                    for i in range(3):
+                        self.vertices[i_v][i] = float(p[i])
+                    i_v += 1
+            elif n_line &lt; self.n_vertex + self.n_edge + 1:
+                if i_e &lt; self.n_edge:
+                    for i in range(2):
+                        self.edges[i_e][i] = int(p[i])
+                    i_e += 1
+            else:
+                if i_f &lt; self.n_face:
+                    for i in range(int(p[0])):
+                        self.faces[i_f][i] = int(p[i+1])
+                    i_f += 1
+            n_line += 1
+    return </code></pre>
+</details>
+</dd>
+<dt id="mesh.mesh.write_mesh_file"><code class="name flex">
+<span>def <span class="ident">write_mesh_file</span></span>(<span>self, filename='output.mesh')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Write topology into .msh file</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def write_mesh_file(self,filename=&#39;output.mesh&#39;):
+    &#34;&#34;&#34;Write topology into .msh file&#34;&#34;&#34;
+    with open(filename,&#39;w&#39;) as f:
+        f.write(&#39;%d %d %d\n&#39;%(self.vertices.shape[0],self.edges.shape[0],self.faces.shape[0]))
+        for vertex in self.vertices:
+            f.write(&#39;%.6f %.6f %.6f\n&#39;%(vertex[0],vertex[1],vertex[2]))
+        for edge in self.edges:
+            f.write(&#39;%d %d\n&#39;%(edge[0],edge[1]))
+        for face in self.faces:
+            f.write(&#39;%d  %d %d %d  \n&#39;%(len(face),face[0],face[1],face[2]))
+    return</code></pre>
+</details>
+</dd>
+<dt id="mesh.mesh.write_off_file"><code class="name flex">
+<span>def <span class="ident">write_off_file</span></span>(<span>self, filename='output.off')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Write topology into .off file for visualization</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def write_off_file(self,filename=&#39;output.off&#39;):
+    &#34;&#34;&#34;Write topology into .off file for visualization&#34;&#34;&#34;
+    with open(filename,&#39;w&#39;) as f:
+        f.write(&#39;OFF\n&#39;)
+        f.write(&#39;%d %d %d\n&#39;%(self.vertices.shape[0],self.faces.shape[0],self.edges.shape[0]))
+        for vertex in self.vertices:
+            f.write(&#39;%.6f %.6f %.6f\n&#39;%(vertex[0],vertex[1],vertex[2]))
+        for face in self.faces:
+            f.write(&#39;%d  %d %d %d  \n&#39;%(len(face),face[0],face[1],face[2]))
+    return</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="mesh.mesh" href="#mesh.mesh">mesh</a></code></h4>
+<ul class="">
+<li><code><a title="mesh.mesh.calc_distance_matrix" href="#mesh.mesh.calc_distance_matrix">calc_distance_matrix</a></code></li>
+<li><code><a title="mesh.mesh.calc_radius" href="#mesh.mesh.calc_radius">calc_radius</a></code></li>
+<li><code><a title="mesh.mesh.centering" href="#mesh.mesh.centering">centering</a></code></li>
+<li><code><a title="mesh.mesh.convert_vertices_to_mesh" href="#mesh.mesh.convert_vertices_to_mesh">convert_vertices_to_mesh</a></code></li>
+<li><code><a title="mesh.mesh.edge_to_face_list" href="#mesh.mesh.edge_to_face_list">edge_to_face_list</a></code></li>
+<li><code><a title="mesh.mesh.edges" href="#mesh.mesh.edges">edges</a></code></li>
+<li><code><a title="mesh.mesh.faces" href="#mesh.mesh.faces">faces</a></code></li>
+<li><code><a title="mesh.mesh.generate_random_vertices" href="#mesh.mesh.generate_random_vertices">generate_random_vertices</a></code></li>
+<li><code><a title="mesh.mesh.get_edge_list" href="#mesh.mesh.get_edge_list">get_edge_list</a></code></li>
+<li><code><a title="mesh.mesh.import_vertices_from_file" href="#mesh.mesh.import_vertices_from_file">import_vertices_from_file</a></code></li>
+<li><code><a title="mesh.mesh.n_edge" href="#mesh.mesh.n_edge">n_edge</a></code></li>
+<li><code><a title="mesh.mesh.n_face" href="#mesh.mesh.n_face">n_face</a></code></li>
+<li><code><a title="mesh.mesh.n_vertices" href="#mesh.mesh.n_vertices">n_vertices</a></code></li>
+<li><code><a title="mesh.mesh.neighbor_search" href="#mesh.mesh.neighbor_search">neighbor_search</a></code></li>
+<li><code><a title="mesh.mesh.normalize" href="#mesh.mesh.normalize">normalize</a></code></li>
+<li><code><a title="mesh.mesh.read_mesh_file" href="#mesh.mesh.read_mesh_file">read_mesh_file</a></code></li>
+<li><code><a title="mesh.mesh.vertices" href="#mesh.mesh.vertices">vertices</a></code></li>
+<li><code><a title="mesh.mesh.write_mesh_file" href="#mesh.mesh.write_mesh_file">write_mesh_file</a></code></li>
+<li><code><a title="mesh.mesh.write_off_file" href="#mesh.mesh.write_off_file">write_off_file</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>
