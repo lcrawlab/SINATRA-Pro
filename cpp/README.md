@@ -10,17 +10,7 @@ This version of the code for implementing the SINATRA Pro pipeline was written i
 
 ## Dependencies
 
-The SINATRA Pro C++ version depends on these following packages.
-
-
-
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <vector>
-#include <cmath>
-#include <iomanip>
-#include <experimental/filesystem>
+The SINATRA Pro C++ version depends on OpenMP (for parallelization) and Armadillo (for linear algebra operations).
 
 ## Compilation
 
