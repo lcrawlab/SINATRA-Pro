@@ -11,7 +11,7 @@ The sub-image selection problem is to identify physical regions that most explai
 3. After fitting the model, an association measure is computed for each topological feature (e.g., centrality measures, posterior inclusion probabilities, p-values, etc).
 4. Association measures are mapped back onto the original shapes via a reconstruction algorithm, thus, highlighting evidence of the physical (spatial) locations that best explain the variation between the two groups.
 
-Through detailed simulations, we assess the power of our algorithm as a function of its inputs. Lastly, as an application of our pipeline, we conduct feature selection on a dataset consisting of mandibular molars from different genera of New World Monkeys and examine the physical properties of their teeth that summarize their phylogeny.
+Through detailed simulations, we assess the power of our algorithm as a function of its inputs. As an application of our pipeline, we conduct feature selection for identifying minute conformational changes in five independent protein systems of varying complexities.
 
 ## Package Details
 
