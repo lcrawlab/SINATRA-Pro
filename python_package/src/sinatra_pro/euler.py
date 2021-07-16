@@ -4,22 +4,25 @@ import os, sys
 from sinatra_pro.mesh import *
 from fast_histogram import histogram1d
 
-## Computes the Euler Characteristics (EC) curves in a given direction for a given mesh
-##
-## Description: Computes the EC curve of a mesh along a given direction in discrete filtration steps.
-##
-## Parameters
-## mesh (class mesh) : The mesh class in mesh.py containing vertices, edges, and faces of the mesh
-## direction
-## @param n_filtration (int): The number of sub-level sets for which to compute the EC curve on in a given direction.
-## @param ball_radius (float): The radius of the bounding ball.
-##
-## @return radius
-## @return ec_curve (nxp matrix): A matrix containing the EC curve of the given simplicial complex with the first index as the projections for which the EC was computed on.
 def compute_ec_curve_single(mesh, direction, ball_radius, n_filtration = 25, ec_type = "ECT", include_faces = True):
+    """
+    Computes the Euler Characteristics (EC) curves in a given direction in discrete filtraion steps for a given mesh 
+
+    `mesh` is the `mesh` class containing vertices, edges, and faces of the mesh.
     
+    `direction` is the direction for EC curve to be calculated on.
+   
+    `ball_radius` is the radius of the bounding ball.
+    
+    `n_filtration` is the number of sub-level sets for which to compute the EC curve on in a given direction.
+    
+    `ec_type` is the type of EC transform (ECT), available options: DECT / ECT / SECT. 
+    DECT (differential ECT) is the default method used for protein. 
+    ECT is the standard ECT and SECT is the smoothe ECT.
+
+    If `included_faces` is set to False, it ignore faces from the EC calculations.
+    """
     eulers = np.zeros(n_filtration,dtype=float)
-    
     vertex_function = np.dot(mesh.vertices,direction) 
     radius = np.linspace(-ball_radius,ball_radius,n_filtration)
    
@@ -57,6 +60,7 @@ def compute_ec_curve_single(mesh, direction, ball_radius, n_filtration = 25, ec_
         return None
 
 def compute_ec_curve(mesh, directions, n_filtration = 25, ball_radius = 1.0, ec_type = "ECT", first_column_index = False, include_faces = True):
+    """Computes the Euler Characteristics (EC) curves in a given direction with single CPU core"""
     eulers = np.zeros((directions.shape[0],n_filtration),dtype=float)
     for i in range(directions.shape[0]):
         eulers[i] = compute_ec_curve_single(mesh,directions[i],ball_radius,n_filtration,ec_type,include_faces)
@@ -64,6 +68,7 @@ def compute_ec_curve(mesh, directions, n_filtration = 25, ball_radius = 1.0, ec_
     return radius, eulers
 
 def compute_ec_curve_parallel(mesh, directions, n_filtration = 25, ball_radius = 1.0, ec_type = "ECT", include_faces = True, n_core = -1):
+    """Computes the Euler Characteristics (EC) curves in a given direction with single multiple core"""
     import multiprocessing
     from joblib import Parallel, delayed
     parameter = (ball_radius,n_filtration,ec_type,include_faces)
@@ -74,7 +79,30 @@ def compute_ec_curve_parallel(mesh, directions, n_filtration = 25, ball_radius =
     radius = np.linspace(-ball_radius,ball_radius,n_filtration)
     return radius, processed_list
 
-def compute_ec_curve_folder(protA, protB, directions, n_sample = 101, ec_type = "ECT", n_cone = 15, n_direction_per_cone = 4, cap_radius = 0.1, n_filtration = 25, ball_radius = 1.0, include_faces = True, directory_mesh_A = None, directory_mesh_B = None, sm_radius = 4.0, hemisphere=False, parallel = False, n_core = -1, verbose = False):
+def compute_ec_curve_folder(protA = "protA", protB = "protB", directions = None, n_sample = 101, ec_type = "ECT", n_filtration = 25, ball_radius = 1.0, include_faces = True, directory_mesh_A = None, directory_mesh_B = None, sm_radius = 4.0, hemisphere=False, parallel = False, n_core = -1, verbose = False):
+    """
+    Computes the Euler Characteristics (EC) curves for a set of directions for the data set. 
+    
+    `ec_type` is the type of EC transform (ECT), available options: DECT / ECT / SECT. 
+    DECT (differential ECT) is the default method used for protein. 
+    ECT is the standard ECT and SECT is the smoothe ECT.
+
+    `directory_mesh_A` and `directory_mesh_B` are the folders that contain the .msh files for meshes for class A and B respectively. 
+    If `directory_mesh_A` and `directory_mesh_B` are provided, the function calculates EC curves of all meshes in the two folders.
+    
+    `directions` is the list of vectors containing all directions for EC curves to be calculated on.
+        
+    `n_filtration` is the number of sub-level sets for which to compute the EC curve on in a given direction.
+
+    `ball_radius` is the radius for EC calculation, default to be 1.0 for unit sphere, where EC curves are calculated from radius = -1.0 to +1.0.
+
+    If `included_faces` is set to False, it ignore faces from the EC calculations.
+
+    If `parallel` is set to True, the program runs on multiple cores for EC calculations, 
+    then `n_core` will be the number of cores used (the program uses all detected cores if `n_core` is not provided`).
+
+    If `verbose` is set to True, the program prints progress in command prompt. 
+    """
 
     if directory_mesh_A == None or directory_mesh_B == None:
         directory = "%s_%s"%(protA,protB)

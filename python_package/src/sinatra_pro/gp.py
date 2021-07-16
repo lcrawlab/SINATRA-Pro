@@ -6,6 +6,13 @@ from scipy.stats import norm
 from sinatra_pro.RATE import *
 
 def CovarianceMatrix(x,bandwidth=0.01):
+    """
+    Computes the covariance matrix given by the Gaussian kernel.
+    
+    `X` is the design matrix where columns are observations.
+
+    `bandwidth` is the free parameter for the Gaussian kernel.
+    """
     bandwidth = 1./(2*bandwidth**2)
     n = x.shape[1]
     K = np.zeros((n,n),dtype=float)
@@ -17,13 +24,33 @@ def CovarianceMatrix(x,bandwidth=0.01):
     return K
 
 def probit_log_likelihood(latent_variables, class_labels):
+    """Probit link function"""
     return np.sum(np.log(norm.cdf(latent_variables*class_labels)))
 
 def logistic_log_likelihood(latent_variables, class_labels):
+    """Logistic link function"""
     return(-np.sum(np.log(1.0+np.exp(latent_variables*class_labels))))
 
-# elliptical slice sampling algorithm adopted from FastGP::ess
 def Elliptical_Slice_Sampling(K,y,n_mcmc=100000,burn_in=1000,probit=True,seed=None,verbose=False):
+    """
+    Elliptical slice sampling algorithm adopted from FastGP::ess from FastGP R package. 
+    The function returns the desired number of MCMC samples. 
+
+    `K` is the covariance matrix of the Gaussian Process model.
+
+    `y` is the list of binary class labels for each data points, 0 or 1. 
+
+    `n_mcmc` is the number of desired mcmc samples to be returned. 
+
+    `burn_in` is the number of burn in steps before MCMC sampling. 
+
+    By default, the likelihood function uses probit link. If `probit` is set to False, the function uses logistic link instead.
+    
+    If `seed` is provided, it will be set as the seed for the random number generator (for testing purpose).
+
+    If `verbose` is set to True, the program prints progress on command prompt.
+    """
+
     if verbose:
         print("Running elliptical slice sampling...")
     if probit:
@@ -63,6 +90,31 @@ def Elliptical_Slice_Sampling(K,y,n_mcmc=100000,burn_in=1000,probit=True,seed=No
     return mcmc_samples[burn_in:,:]
 
 def calc_rate(X,y,bandwidth = 0.01,sampling_method = 'ESS', n_mcmc = 100000,burn_in = 1000,probit = True,seed = None, parallel = False, n_core = -1, verbose = False):
+    """
+    Calculate RelATive cEntrality (RATE) centrality measures from data.
+    
+    `X` is the design matrix where columns are observations.
+
+    `y` is the list of the class labels for each data points, 0 or 1. 
+
+    `bandwidth` is the free parameter for the Gaussian kernel. 
+
+    `sampling_method` is the sampling method used for sampling parameters, currently only `ESS` (elliptical slice sampling) is available. 
+
+    `n_mcmc` is the number of desired MCMC samples to be returned. 
+
+    `burn_in` is the number of burn in steps before MCMC sampling. 
+
+    By default, the likelihood function uses probit link. If `probit` is set to False, the function uses logistic link instead.
+
+    If `seed` is provided, it will be set as the seed for the random number generator (for testing purpose). 
+
+    If `parallel` is set to True, the program runs on multiple cores for RATE calculations, 
+    then `n_core` will be the number of cores used (the program uses all detected cores if `n_core` is not provided).
+
+    If `verbose` is set to True, the program prints progress on command prompt.
+   
+    """
     n = X.shape[0]
     f = np.zeros(n)
     if verbose:

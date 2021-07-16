@@ -4,13 +4,13 @@ import sys
 import numpy as np
 from scipy.linalg import pinv
 
-# Sherman-Morrison
-def sherman_r(A, u, v):
+def sherman_r(A,u,v):
+    """ Sherman-Morrisoni formula to compute the inverse of the sum of an invertible matrix A and the outer product of vectors u and v."""
     x = v.T @ A @ u + 1
     return A - ((A @ u) @ (v.T @ A)) * (1./x)
 
-# calculate KLD for column q
 def calc_kld(mu,Lambda,V,q,verbose=False):
+    """Calculate KLD for column q """
     if verbose:
         sys.stdout.write("Calculating KLD(%d)...\r"%q)
         sys.stdout.flush()
@@ -21,7 +21,13 @@ def calc_kld(mu,Lambda,V,q,verbose=False):
     kld = mu[q]**2 * alpha * .5
     return kld
 
-def RATE(X,f_draws=None,pre_specify=False,beta_draws=None,prop_var=1,snp_nms=None,low_rank=False,parallel=False,n_core=-1,verbose=False):
+def RATE(X,f_draws=None,pre_specify=False,beta_draws=None,prop_var=1,snp_nms=None,low_rank=False,parallel=False,n_core=-1,verbose=False):    
+    """
+    Predictor Prioritization via RelATive cEntrality (RATE) centrality measures.
+
+    This function assumes that one has already obtained (posterior) draws/estimates of a nonparametric or nonlinear function as suggested in Crawford et al. (2018)
+
+    """
     if verbose:
         sys.stdout.write("Calculating RATE...\n")
 

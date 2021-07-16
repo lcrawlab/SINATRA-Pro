@@ -8,18 +8,31 @@ from MDAnalysis.analysis.rms import rmsd
 from MDAnalysis.core.groups import AtomGroup
 from sinatra_pro.mesh import *
 
-####
-# Convert MD simulation trajectory to aligned protein structures in PDB format
-# 
-# protA = name of protein A
-# protB = name of protein B
-# struct_file = protein structure file e.g. .pdb, .gro, .tpr, .pqr
-# traj_file = MD trajectory file e.g. .xtc, .dcd, .trj
-# n_sample = # of sample structure drawn from trajecotry at even time interval
-# directory = directory to store all the files
-####
 def convert_traj_pdb_aligned(protA, protB, struct_file_A, traj_file_A, struct_file_B, traj_file_B, align_frame = 0, n_sample = 100, selection = None, directory = None, offset = 0, align_sequence = False, single = False, verbose = False):
+    """
+    Convert MD simulation trajectory to aligned protein structures in PDB format
     
+    Protein structure alignment is done by finding the rotational matrix that minimize the root mean square distance (RMSD) between two comparing coordinate sets.
+
+    `protA` and `protB` are the name of protein A and B respectively for file naming.
+
+    `struct_file_A` and `struct_file_B` are the the protein structure file (e.g. .pdb, .gro, .tpr, .pqr.) for protein A and B respectively.
+
+    `traj_file_A` and `traj_file_B` are the Molecular Dynamics (MD) simulation trajectory file (e.g. .xtc, .dcd, .trj) for protein A and B respectively.
+
+    `n_sample` is the number of sample structure drawn from trajecotry at even time interval.
+    
+    `directory` is the directory to store the output files.
+    
+    `offset` is the frame number to start drawing samples from the trajectory.
+
+    If `align_sequence` is set to True, the program aligns the sequence using the Needleman-Wunsch algorithm implemented by MDAnalysis.
+
+    If `single` is set to True, the program just names the folders containing the output files without the `offset` in the folder name.
+
+    If `verbose` is set to True, the program prints progress in command prompt.
+    """
+   
     if directory == None:
         directory = "%s_%s"%(protA,protB)
 
@@ -83,8 +96,13 @@ def convert_traj_pdb_aligned(protA, protB, struct_file_A, traj_file_A, struct_fi
         rmsds = []
         t = []
         nframe = len(u.trajectory)
-        nskip =  int(nframe/n_sample)
         
+        if n_sample > n_frame:
+            print("n_sample > number of frames in trajectory files!")
+            exit()
+        
+        nskip =  int(nframe/n_sample)
+         
         frame = 0
         i_sample = 0
         for ts in u.trajectory:
@@ -110,18 +128,8 @@ def convert_traj_pdb_aligned(protA, protB, struct_file_A, traj_file_A, struct_fi
             sys.stdout.write("\n") 
     return
 
-####
-# Convert the aligned protein structures in PDB format (e.g. from "convert_traj_pdb_aligned") to simplicial meshes
-# 
-# protA = name of protein A
-# protB = name of protein B 
-# n_sample = # of sample structure drawn from trajecotry at even time interval
-# radius = cutoff radius for constructing simplicial meshes
-# directory_pdb_A = directory for the input pdb files, default = protA_protB/pdb/protA if not specified
-# directory_pdb_B = directory for the input pdb files, default = protA_protB/pdb/protB if not specified
-# directory_mesh = directory for the input pdb files, default = protA_protB/mesh/ if not specified
-####
 def calc_radius_pdb(selection='protein',directory=None,prot=None,i_sample=None,directory_pdb=None,filename=None):
+    """Calculate radius of a PDB structure i.e. distance of the atom furthest away from origin."""
     if directory != None and prot != None and i_sample != None:
         pdb_file = '%s/pdb/%s/%s_frame%d.pdb'%(directory,prot,prot,i_sample)
     if directory_pdb != None:
@@ -130,11 +138,15 @@ def calc_radius_pdb(selection='protein',directory=None,prot=None,i_sample=None,d
         else:
             pdb_file = directory_pdb + '/' + filename
     protein = mda.Universe(pdb_file).select_atoms(selection)
+    if len(protein) == 0:
+        print("PDB file %s selection %s is empty!"%(pdb_file,selection))
+        exit()
     meshA = mesh()
     meshA.vertices = protein.positions
     return meshA.calc_radius()
 
 def convert_pdb_mesh_single(sm_radius, rmax, directory = None, prot = None , i_sample = None, directory_mesh = None, directory_pdb = None, filename = None, selection='protein', verbose = False):
+    """Convert PDB structure to mesh by simplical construction."""
     if directory != None and prot != None and i_sample != None and directory_mesh != None:
         pdb_file = '%s/pdb/%s/%s_frame%d.pdb'%(directory,prot,prot,i_sample)
         msh_file = '%s/%s_frame%d.msh'%(directory_mesh,prot,i_sample)
@@ -154,8 +166,19 @@ def convert_pdb_mesh_single(sm_radius, rmax, directory = None, prot = None , i_s
     meshA.convert_vertices_to_mesh(sm_radius=sm_radius,msh_file=msh_file,rmax=rmax)
     return
 
-def convert_pdb_mesh(protA, protB, n_sample = 101, sm_radius = 4.0, directory_pdb_A = None, directory_pdb_B = None, directory_mesh = None, parallel = False, n_core = -1, verbose = False):
+def convert_pdb_mesh(protA = "protA", protB = "protB", n_sample = 101, sm_radius = 4.0, directory_pdb_A = None, directory_pdb_B = None, directory_mesh = None, parallel = False, n_core = -1, verbose = False):
+    """
+    Convert the aligned protein structures in PDB format (e.g. from "convert_traj_pdb_aligned") to simplicial meshes
     
+    `radius` is the cutoff radius for constructing simplicial meshes.
+    
+    `directory_pdb_A` is the directory for the input pdb files, default = protA_protB/pdb/protA if not specified.
+    
+    `directory_pdb_B` is the directory for the input pdb files, default = protA_protB/pdb/protB if not specified.
+    
+    `directory_mesh` is the directory for the input pdb files, default = protA_protB/mesh/ if not specified.
+    """
+
     if parallel:
         import multiprocessing
         from joblib import Parallel, delayed
@@ -179,29 +202,35 @@ def convert_pdb_mesh(protA, protB, n_sample = 101, sm_radius = 4.0, directory_pd
             if not os.path.exists(directory_mesh):
                 os.mkdir(directory_mesh)
 
-
     r = np.array([])
     if verbose:
         sys.stdout.write('Calculating sphere radius...\n')
     if directory_pdb_A == None or directory_pdb_B == None:
         for prot in [protA, protB]:
             if parallel:
-                r_prot = Parallel(n_jobs=n_core)(delayed(calc_radius_pdb)(selection='protein',directory=directory,prot=prot,i_sample=i_sample) for i_sample in range(n_sample))
-                r = np.append(r,r_prot)
+                r_prots = Parallel(n_jobs=n_core)(delayed(calc_radius_pdb)(selection='protein',directory=directory,prot=prot,i_sample=i_sample) for i_sample in range(n_sample))
+                r = np.append(r,r_prots)
             else:
                 for i_sample in range(n_sample):
-                    r_prot = calc_radius_pdb(selection='protein',directory=directory,prot=prot,i_sample=i_sample)
-                    r = np.append(r,r_prot)
+                    r_prots = calc_radius_pdb(selection='protein',directory=directory,prot=prot,i_sample=i_sample)
+                    r = np.append(r,r_prots)
     else:
         for directory_pdb in [directory_pdb_A,directory_pdb_B]:
             if parallel:
-                r_prot = Parallel(n_jobs=n_core)(delayed(calc_radius_pdb)(selection='protein',directory_pdb=directory_pdb,filename=filename) for filename in os.listdir(directory_pdb))
-                r = np.append(r,r_prot)
+                r_prots = Parallel(n_jobs=n_core)(delayed(calc_radius_pdb)(selection='protein',directory_pdb=directory_pdb,filename=filename) for filename in os.listdir(directory_pdb))
+                if len(r_prots) == 0:
+                    print("Folder %s is emply or contain no PDB files!"%directory_pdb)
+                    exit()
+                r = np.append(r,r_prots)
             else:
+                r_prots = []
                 for filename in os.listdir(directory_pdb):
                     r_prot = calc_radius_pdb(selection='protein',directory_pdb=directory_pdb,filename=filename)
-                    if r_prot != None:
-                        r = np.append(r,r_prot)
+                    r_prots.append(r_prot)
+                if len(r_prot) == 0:
+                    print("Folder %s is emply or contain no PDB files!"%directory_pdb)
+                    exit()
+                r = np.append(r,r_prots)
 
     rmax = np.amax(r)
     if verbose:

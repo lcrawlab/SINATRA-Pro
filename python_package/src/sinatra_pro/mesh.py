@@ -10,38 +10,44 @@ class mesh:
     
     def __init__(self):
         self.vertices = []
+        """List of coordinates of vertices"""
         self.n_vertices = 0
+        """Number of vertices"""
         self.edges = []
+        """List of indices of connected edges"""
         self.n_edge = 0
+        """Number of edges"""
         self.faces = []
+        """List of indices of constructed faces"""
         self.n_face = 0
+        """Number of faces"""
         return
     
 
-    # calculate distance of the vertex furthest away from origin
     def calc_radius(self):
+        """Calculate distance of the vertex furthest away from origin """
         return np.amax(np.linalg.norm(self.vertices,axis=1))
     
-    # normalize vertices to the unit sphere
     def normalize(self):
+        """Normalize vertices to the unit sphere """
         rmax = self.calc_radius()
         self.vertices /= rmax
         return
    
-    # center protein to origin by center of geometry
     def centering(self):
+        """Center protein to origin by center of geometry"""
         center = np.mean(self.vertices,axis=0) # center of geometry
         self.vertices = self.vertices - center
         return 
     
-    # read positions of vertices from file
     def import_vertices_from_file(self, filename):
+        """Read positions of vertices from file"""
         self.vertices = np.loadtxt(filename,usecols=(0,1,2))
         self.n_vertices = self.vertices.shape[0]
         return
 
-    # calculate distance matrix
     def calc_distance_matrix(self):
+        """Calculate distance matrix"""
         self.n_vertices = self.vertices.shape[0]
         # calculate self distance matrix among vertices
         self.distance_matrix = distance.pdist(self.vertices) 
@@ -58,32 +64,30 @@ class mesh:
         self.pairs = self.pairs[sorted_filter]     
         return
     
-    # output list of edges within distance cutoff from sorted distance matrix  
     def get_edge_list(self, radius):
+        """Output list of edges within distance cutoff from sorted distance matrix"""
         pair_list = np.argmax(self.distance_matrix > radius)
         return self.pairs[:pair_list], self.distance_matrix[:pair_list]
     
-    # Neighbor search using Grid search algorithm
     def neighbor_search(self,cutoff=4.0):
-        #max_gridsize = 8000
-        #passed = False
-        #while not passed:
-        #    try:
-        #        nsr = FastNS(cutoff=cutoff,coords=self.vertices,box=self.box,pbc=False,max_gridsize=max_gridsize)
-        #        passed = True
-        #    except MemoryError:
-        #        max_gridsize = int(max_gridsize/2)
-        #    except:
-        #        raise
-        #    if passed:
-        #        break
+        """
+        Neighbor search using Neighbor Grid Search (FastNS) algorithm from MDAnalysis. 
+        
+        It generates a list of indices of pairs of vertices that are within `cutoff` apart, 
+        then save the list as list of edges for the mesh.
+        """
         nsr = FastNS(cutoff=cutoff,coords=self.vertices,box=self.box,pbc=False)
         result = nsr.self_search()
         self.edges = result.get_pairs()[::2]
         return 
     
-    # convert edge list to face list
     def edge_to_face_list(self):
+        """
+        Convert edge list to face list
+
+        Iterate through list of connected edges to look for any 3 edges that enclose a triangle. 
+        Such enclosed triangles are constructed as faces.
+        """
         self.n_vertices = self.vertices.shape[0]
         self.connections = [set() for i in range(self.n_vertices)]
         for edge in self.edges:
@@ -100,8 +104,8 @@ class mesh:
         self.faces = np.array(self.faces)
         return
      
-    # read topology from .msh file
     def read_mesh_file(self,filename='output.mesh'):
+        """Read topology from .msh file"""
         n_line = 0
         i_v = 0
         i_e = 0
@@ -135,8 +139,8 @@ class mesh:
                 n_line += 1
         return 
    
-    # write topology into .msh file
     def write_mesh_file(self,filename='output.mesh'):
+        """Write topology into .msh file"""
         with open(filename,'w') as f:
             f.write('%d %d %d\n'%(self.vertices.shape[0],self.edges.shape[0],self.faces.shape[0]))
             for vertex in self.vertices:
@@ -147,8 +151,8 @@ class mesh:
                 f.write('%d  %d %d %d  \n'%(len(face),face[0],face[1],face[2]))
         return
    
-    # write topology into .off file for visualization
     def write_off_file(self,filename='output.off'):
+        """Write topology into .off file for visualization"""
         with open(filename,'w') as f:
             f.write('OFF\n')
             f.write('%d %d %d\n'%(self.vertices.shape[0],self.faces.shape[0],self.edges.shape[0]))
@@ -158,8 +162,17 @@ class mesh:
                 f.write('%d  %d %d %d  \n'%(len(face),face[0],face[1],face[2]))
         return
     
-    # convert set of vertices to a simplicial complex by connecting edges and faces
     def convert_vertices_to_mesh(self,sm_radius=2.0,msh_file='mesh.msh',rmax=1.0):
+        """
+        Convert set of vertices to a simplicial complex by connecting edges and faces
+        
+        `sm_radius` is the radius cutoff for constructing simplicial complices. 
+        Pairs of vertices closer than `sm_radius` Angstrom apart are connected to form edges. 
+
+        `msh_file` is the filename for output .msh files.
+
+        `rmax` is the radius of the largest mesh used to normalize all meshes to the same unit sphere. 
+        """
         # position vertices for grid search algorithm
         temp = self.vertices.copy()
         self.vertices -= np.average(self.vertices,axis=0)
@@ -173,8 +186,8 @@ class mesh:
         self.write_mesh_file(filename=msh_file) 
         return
     
-    # generate N random vertices on [0,1],[0,1] for testing purpose
     def generate_random_vertices(self, n_vertices):
+        """Generate N random vertices on [0,1],[0,1] for testing purpose"""
         np.random.seed(0)
         self.n_vertices = n_vertices
         vertices = []
