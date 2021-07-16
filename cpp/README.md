@@ -31,6 +31,6 @@ Wai Shing Tang*, Gabriel Monteiro da Silva*, Henry Kirveslahti, Erin Skeens, Bib
 
 ## License
 
-GNU General Public License v3.0
+MIT License
 
 

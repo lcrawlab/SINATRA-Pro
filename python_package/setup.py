@@ -13,7 +13,7 @@ setup(
     project_urls = {
         "Bug Tracker" : "https://github.com/lcrawlab/SINATRA-Pro/issues",
     },
-    license = 'GNU General Public License v3.0',
+    license = 'MIT License',
     license_files = 'LICENSE',
     python_requires = '>=3.6',
     install_requires = [ 
@@ -25,7 +25,7 @@ setup(
         ],
     classifiers = [
         'Programming Language :: Python :: 3',
-        'License :: OSI Approved :: GNU General Public License (GPL)',
+        'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         ],
     package_dir={"": "src"},
