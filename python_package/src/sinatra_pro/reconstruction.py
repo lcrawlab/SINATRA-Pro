@@ -78,6 +78,8 @@ def reconstruct_on_multiple_mesh(protA, protB, directions, rates, not_vacuum, n_
                     out_prob.append(prob)
             out_prob = np.array(out_prob)
         average_prob = np.average(out_prob,axis=0)
+    if verbose:
+        sys.stdout.write('\n')
     return average_prob
 
 def write_vert_prob_on_pdb(vert_prob,protA=None,protB=None,pdb_in_file=None,pdb_out_file=None,selection="protein",by_rank=True):

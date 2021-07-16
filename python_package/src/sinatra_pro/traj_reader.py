@@ -95,13 +95,13 @@ def convert_traj_pdb_aligned(protA, protB, struct_file_A, traj_file_A, struct_fi
         
         rmsds = []
         t = []
-        nframe = len(u.trajectory)
+        n_frame = len(u.trajectory)
         
         if n_sample > n_frame:
             print("n_sample > number of frames in trajectory files!")
             exit()
         
-        nskip =  int(nframe/n_sample)
+        nskip =  int(n_frame/n_sample)
          
         frame = 0
         i_sample = 0
