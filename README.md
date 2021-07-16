@@ -162,7 +162,7 @@ Other code specific to analyses conducted in the paper can be found in the repo 
 
 ## Questions and Feedback
 
-For questions or concerns, please contact [Wai Shing Tang]((mailto:wai_shing_tang@brown.edu)) or [Lorin Crawford](mailto:lcrawford@microsoft.com). We appreciate any feedback you may have with our repository and instructions for running the software.
+For questions or concerns, please contact [Wai Shing Tang](mailto:wai_shing_tang@brown.edu) or [Lorin Crawford](mailto:lcrawford@microsoft.com). We appreciate any feedback you may have with our repository and instructions for running the software.
 
 ## Relevant Citations
 
