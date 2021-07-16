@@ -1,20 +1,8 @@
-Metadata-Version: 2.1
-Name: SINATRA-Pro-Test
-Version: 0.0.22
-Summary: Python3 package for SINATRA Pro.
-Home-page: https://github.com/lcrawlab/SINATRA-Pro
-Author: Wai Shing Tang
-License: GNU General Public License v3.0
-Project-URL: Bug Tracker, https://github.com/lcrawlab/SINATRA-Pro/issues
-Platform: UNKNOWN
-Classifier: Programming Language :: Python :: 3
-Classifier: License :: OSI Approved :: GNU General Public License (GPL)
-Classifier: Operating System :: OS Independent
-Requires-Python: >=3.6
-
 # SINATRA Pro 
 
 Protein Analysis using Topological Summary Statistics.
+
+see [Github repo](https://github.com/lcrawlab/SINATRA-Pro) for detail.
 
 ## Introduction
 
@@ -46,6 +34,20 @@ The SINATRA Pro package depends on these following Python 3 packages.
     fast-histogram >= 0.9
     joblib >= 0.16.0
 
+## Installation and Usage
+
+To install the package, 
+
+        pip3 install SINATRA-Pro
+
+To load the package, 
+
+        import sinatra_pro 
+
+To run the application,
+
+        python3 -m sinatra_pro
+
 ## Relevant Citations
 
 Wai Shing Tang*, Gabriel Monteiro da Silva*, Henry Kirveslahti, Erin Skeens, Bibo Feng, Timothy Sudijono, Kevin K. Yang, Sayan Mukherjee, Brenda Rubenstein, and Lorin Crawford. Topological Data Analytic Approach for Discovering Biophysical Signatures in Protein Dynamics.
@@ -53,7 +55,5 @@ Wai Shing Tang*, Gabriel Monteiro da Silva*, Henry Kirveslahti, Erin Skeens, Bib
 ## License
 
 GNU General Public License v3.0
-
-
 
 

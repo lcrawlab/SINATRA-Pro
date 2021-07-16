@@ -5,9 +5,14 @@ with open("README.md", "r", encoding='utf-8') as fh:
 
 setup(
     name='SINATRA Pro Test',
-    version='0.0.14',
-    description = 'Python3 package for SINATRA Pro',
+    version='0.0.23',
+    author="Wai Shing Tang",
+    description = 'Python3 package for SINATRA Pro.',
     long_description = long_description,
+    url = "https://github.com/lcrawlab/SINATRA-Pro",
+    project_urls = {
+        "Bug Tracker" : "https://github.com/lcrawlab/SINATRA-Pro/issues",
+    },
     license = 'GNU General Public License v3.0',
     license_files = 'LICENSE',
     python_requires = '>=3.6',
