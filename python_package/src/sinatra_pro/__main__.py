@@ -162,7 +162,6 @@ np.savetxt("%s/%s_%s_%s_%.1f_%d_%d_%.2f_%d_norm_all.txt"%(directory,ec_type,prot
 np.savetxt("%s/notvacuum_%s_%s_%s_%.1f_%d_%d_%.2f_%d_norm_all.txt"%(directory,ec_type,protA,protB,sm_radius,n_cone,n_direction_per_cone,cap_radius,n_filtration),not_vacuum)
 np.savetxt('%s/%s_%s_label_all.txt'%(directory,protA,protB),y)    
 
-
 ## RATE calculation for variable selections from the topological summary statistics
 kld, rates, delta, eff_samp_size = calc_rate(X,y,
         bandwidth=bandwidth,
