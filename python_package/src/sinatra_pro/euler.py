@@ -3,6 +3,8 @@
 import os, sys
 from sinatra_pro.mesh import *
 from fast_histogram import histogram1d
+import multiprocessing
+from joblib import Parallel, delayed
 
 def compute_ec_curve_single(mesh, direction, ball_radius, n_filtration = 25, ec_type = "ECT", include_faces = True):
     """
@@ -69,8 +71,6 @@ def compute_ec_curve(mesh, directions, n_filtration = 25, ball_radius = 1.0, ec_
 
 def compute_ec_curve_parallel(mesh, directions, n_filtration = 25, ball_radius = 1.0, ec_type = "ECT", include_faces = True, n_core = -1):
     """Computes the Euler Characteristics (EC) curves in a given direction with single multiple core"""
-    import multiprocessing
-    from joblib import Parallel, delayed
     parameter = (ball_radius,n_filtration,ec_type,include_faces)
     if n_core == -1:    
         n_core = multiprocessing.cpu_count()
