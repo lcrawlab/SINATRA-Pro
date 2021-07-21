@@ -21,12 +21,25 @@ def calc_kld(mu,Lambda,V,q,verbose=False):
     kld = mu[q]**2 * alpha * .5
     return kld
 
-def RATE(X,f_draws=None,pre_specify=False,beta_draws=None,prop_var=1,snp_nms=None,low_rank=False,parallel=False,n_core=-1,verbose=False):    
+def RATE(X,f_draws=None,prop_var=1,low_rank=False,parallel=False,n_core=-1,verbose=False):    
     """
-    Predictor Prioritization via RelATive cEntrality (RATE) centrality measures.
+    Variable Prioritization via RelATive cEntrality (RATE) centrality measures.
 
     This function assumes that one has already obtained (posterior) draws/estimates of a nonparametric or nonlinear function as suggested in Crawford et al. (2018)
 
+    'X' is the nxp design matrix (e.g. genotypes) where n is the number of samples and p is the number of dimensions. This is the original input data
+    
+    'f_draws' is the Bxn matrix of the nonparametric model estimates (i.e. f.hat) with B being the number of sampled (posterior) draws;
+    
+    'prop_var' is the desired proportion of variance that the user wants to explain when applying singular value decomposition (SVD) to the design matrix X (this is preset to 1);
+    
+    'low_rank' is a boolean variable detailing if the function will use low rank matrix approximations to compute the RATE values --- note that this highly recommended in the case that the number of covariates (e.g. SNPs, genetic markers) is large; 
+       
+    If `parallel` is set to True, the program runs on multiple cores for RATE calculations, 
+    then `n_core` will be the number of cores used (the program uses all detected cores if `n_core` is not provided).
+
+    If `verbose` is set to True, the program prints progress on command prompt.
+ 
     """
     if verbose:
         sys.stdout.write("Calculating RATE...\n")

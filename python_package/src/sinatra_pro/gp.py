@@ -89,7 +89,7 @@ def Elliptical_Slice_Sampling(K,y,n_mcmc=100000,burn_in=1000,probit=True,seed=No
         sys.stdout.write('\n')
     return mcmc_samples[burn_in:,:]
 
-def calc_rate(X,y,bandwidth = 0.01,sampling_method = 'ESS', n_mcmc = 100000,burn_in = 1000,probit = True,seed = None, parallel = False, n_core = -1, verbose = False):
+def calc_rate(X,y,bandwidth=0.01,sampling_method='ESS',n_mcmc=100000,burn_in=1000,probit=True,seed=None,prop_var=1,low_rank=False,parallel=False,n_core=-1,verbose=False):
     """
     Calculate RelATive cEntrality (RATE) centrality measures from data.
     
@@ -108,6 +108,10 @@ def calc_rate(X,y,bandwidth = 0.01,sampling_method = 'ESS', n_mcmc = 100000,burn
     By default, the likelihood function uses probit link. If `probit` is set to False, the function uses logistic link instead.
 
     If `seed` is provided, it will be set as the seed for the random number generator (for testing purpose). 
+    
+    'prop_var' is the desired proportion of variance in RATE calculation that the user wants to explain when applying singular value decomposition (SVD) to the design matrix X (this is preset to 1);
+    
+    'low_rank' is a boolean variable detailing if the function will use low rank matrix approximations to compute the RATE values --- note that this highly recommended in the case that the number of covariates (e.g. SNPs, genetic markers) is large; 
 
     If `parallel` is set to True, the program runs on multiple cores for RATE calculations, 
     then `n_core` will be the number of cores used (the program uses all detected cores if `n_core` is not provided).
@@ -121,6 +125,6 @@ def calc_rate(X,y,bandwidth = 0.01,sampling_method = 'ESS', n_mcmc = 100000,burn
         sys.stdout.write('Calculating Covariance Matrix...\n')
     Kn = CovarianceMatrix(X.T,bandwidth)
     samples = Elliptical_Slice_Sampling(Kn,y,n_mcmc=n_mcmc,burn_in=burn_in,probit=probit,seed=seed,verbose=verbose)
-    kld, rates, delta, eff_samp_size = RATE(X=X,f_draws=samples,parallel=parallel,n_core=n_core,verbose=verbose)
+    kld, rates, delta, eff_samp_size = RATE(X=X,f_draws=samples,prop_var=prop_var,low_rank=low_rank,parallel=parallel,n_core=n_core,verbose=verbose)
     return kld, rates, delta, eff_samp_size
  
