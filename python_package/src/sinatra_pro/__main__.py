@@ -46,11 +46,12 @@ parser.add_argument('-bw','--bandwidth', type=float, help='bandwidth for ellipti
 parser.add_argument('-sm','--sampling_method', type=str, help='sampling method, default: ESS', default='ESS')
 parser.add_argument('-nm','--n_mcmc', type=int, help='number of sample from ESS', default=100000)
 parser.add_argument('-ll' ,'--logistic_likelihood', help='use logistic likelihood instead of probit likelihood', dest='probit', action='store_false')
+parser.add_argument('-lr' ,'--low_rank', help='use low rank matrix approximations to compute the RATE values', dest='low_rank', action='store_true')
 
 parser.add_argument('-v' ,'--verbose', help='verbose', dest='verbose', action='store_true')
 parser.add_argument('-no','--name_offset', help='name folder with offset', dest='single', action='store_false')
 
-parser.set_defaults(from_pdb=False,hemisphere=False,probit=True,parallel=False,verbose=False,single=True)
+parser.set_defaults(from_pdb=False,hemisphere=False,probit=True,low_rank=False,parallel=False,verbose=False,single=True)
 args = parser.parse_args()
 
 from_pdb = args.from_pdb # if True, start from PDB files
@@ -92,7 +93,7 @@ bandwidth = args.bandwidth
 sampling_method = args.sampling_method
 n_mcmc = args.n_mcmc
 probit = args.probit
-
+low_rank = args.low_rank
 single = args.single
 verbose = args.verbose
 
@@ -166,6 +167,7 @@ np.savetxt('%s/%s_%s_label_all.txt'%(directory,protA,protB),y)
 kld, rates, delta, eff_samp_size = calc_rate(X,y,
         bandwidth=bandwidth,
         n_mcmc=n_mcmc,
+        low_rank=low_rank,
         parallel=parallel,
         n_core=n_core,
         verbose=verbose)

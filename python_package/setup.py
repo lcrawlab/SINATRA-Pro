@@ -4,11 +4,12 @@ with open("README.md", "r", encoding='utf-8') as fh:
     long_description = fh.read()
 
 setup(
-    name='SINATRA Pro Test',
-    version='0.0.23',
+    name='SINATRA Pro',
+    version='0.0.1',
     author="Wai Shing Tang",
     description = 'Python3 package for SINATRA Pro.',
     long_description = long_description,
+    long_description_content_type = 'text/markdown',
     url = "https://github.com/lcrawlab/SINATRA-Pro",
     project_urls = {
         "Bug Tracker" : "https://github.com/lcrawlab/SINATRA-Pro/issues",
