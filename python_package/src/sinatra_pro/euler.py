@@ -55,7 +55,7 @@ def compute_ec_curve_single(mesh, direction, ball_radius, n_filtration = 25, ec_
         return eulers
     elif ec_type == "SECT":
         eulers = np.cumsum(eulers)
-        eulers -= np.mean(eulers[i])
+        eulers -= np.mean(eulers)
         eulers = np.cumsum(eulers)*((radius[-1]-radius[0])/n_filtration)
         return eulers
     else:
