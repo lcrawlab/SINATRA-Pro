@@ -114,6 +114,8 @@ To run the application:
                                     number of sample from ESS
               -ll, --logistic_likelihood
                                     use logistic likelihood instead of probit likelihood
+              -lr, --low_rank       use low rank matrix approximations to compute the RATE
+                                    values
               -v, --verbose         verbose
               -no, --name_offset    name folder with offset
 

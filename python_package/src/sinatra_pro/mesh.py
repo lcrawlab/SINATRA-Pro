@@ -2,6 +2,7 @@
 
 import numpy as np
 from scipy.spatial import distance
+import MDAnalysis
 from MDAnalysis.lib.nsgrid import FastNS, NSResults
 import multiprocessing
 from joblib import Parallel, delayed
@@ -69,18 +70,30 @@ class mesh:
         pair_list = np.argmax(self.distance_matrix > radius)
         return self.pairs[:pair_list], self.distance_matrix[:pair_list]
     
-    def neighbor_search(self,cutoff=4.0):
+    def neighbor_search_old(self,coords,box,cutoff):
         """
-        Neighbor search using Neighbor Grid Search (FastNS) algorithm from MDAnalysis. 
+        Neighbor search using Neighbor Grid Search (FastNS) algorithm from MDAnalysis (==0.20.1). 
         
         It generates a list of indices of pairs of vertices that are within `cutoff` apart, 
         then save the list as list of edges for the mesh.
         """
-        nsr = FastNS(cutoff=cutoff,coords=self.vertices,box=self.box,pbc=False)
+        nsr = FastNS(cutoff=cutoff,coords=coords,box=box,pbc=False)
         result = nsr.self_search()
         self.edges = result.get_pairs()[::2]
         return 
     
+    def neighbor_search_new(self,coords,box,cutoff):
+        """
+        Neighbor search using Neighbor Grid Search (FastNS) algorithm from MDAnalysis (==1.1.1). 
+        
+        It generates a list of indices of pairs of vertices that are within `cutoff` apart, 
+        then save the list as list of edges for the mesh.
+        """
+        nsr = FastNS(cutoff=cutoff,coords=coords,box=box,pbc=False)
+        result = nsr.self_search()
+        self.edges = result.get_pairs()
+        return 
+   
     def edge_to_face_list(self):
         """
         Convert edge list to face list
@@ -175,15 +188,20 @@ class mesh:
         """
         # position vertices for grid search algorithm
         temp = self.vertices.copy()
-        self.vertices -= np.average(self.vertices,axis=0)
-        self.box = np.append(np.amax(np.fabs(self.vertices),axis=0)*2+1.0,[90.0,90.0,90.0]) 
-        self.vertices += self.box[:3]/2
-        
-        self.neighbor_search(cutoff=sm_radius) # neighbor grid search to identify vertex pairs within r < cutoff apart
-        self.edge_to_face_list() # generate faces enclosed by any 3 edges
-        self.vertices = temp 
+        lmax = np.amax(self.vertices,axis=0)
+        lmin = np.amin(self.vertices,axis=0)
+        box = np.append((lmax-lmin)*1.2,[90.0,90.0,90.0])
+        temp -= lmin
+        if int(MDAnalysis.__version__[0]) == 0:
+            self.neighbor_search_old(cutoff=sm_radius,coords=temp,box=box) # neighbor grid search to identify vertex pairs within r < cutoff apart
+        elif int(MDAnalysis.__version__[0]) == 1:
+            self.neighbor_search_new(cutoff=sm_radius,coords=temp,box=box) # neighbor grid search to identify vertex pairs within r < cutoff apart  
+        else:
+            self.calc_distance_matrix()
+            self.edges, distances = self.get_edge_list(radius=sm_radius)
+        self.edge_to_face_list() # generate faces enclosed by any 3 edges    
         self.vertices /= rmax # normalized generated meshes to the specified unit sphere
-        self.write_mesh_file(filename=msh_file) 
+        self.write_mesh_file(filename=msh_file)
         return
     
     def generate_random_vertices(self, n_vertices):
