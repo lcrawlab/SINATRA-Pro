@@ -172,7 +172,7 @@ kld, rates, delta, eff_samp_size = calc_rate(X,y,
         n_core=n_core,
         verbose=verbose)
 
-np.savetxt("%s/rate_atom_%s_%s_%s_%.1f_%d_%d_%.2f_%d.txt"%(directory,ec_type,protA,protB,sm_radius,n_cone,n_direction_per_cone,cap_radius,n_filtration),rates)
+np.savetxt("%s/rate_%s_%s_%s_%.1f_%d_%d_%.2f_%d.txt"%(directory,ec_type,protA,protB,sm_radius,n_cone,n_direction_per_cone,cap_radius,n_filtration),rates)
 
 ## reconstruct the RATE values onto the protein structures for visualization
 ## reconstruct probabilities are stored in "Temperature factor" column in the pdb format
