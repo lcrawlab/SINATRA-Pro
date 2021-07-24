@@ -218,19 +218,16 @@ def convert_pdb_mesh(protA = "protA", protB = "protB", n_sample = 101, sm_radius
         for directory_pdb in [directory_pdb_A,directory_pdb_B]:
             if parallel:
                 r_prots = Parallel(n_jobs=n_core)(delayed(calc_radius_pdb)(selection='protein',directory_pdb=directory_pdb,filename=filename) for filename in os.listdir(directory_pdb))
-                if len(r_prots) == 0:
-                    print("Folder %s is emply or contain no PDB files!"%directory_pdb)
-                    exit()
                 r = np.append(r,r_prots)
             else:
                 r_prots = []
                 for filename in os.listdir(directory_pdb):
                     r_prot = calc_radius_pdb(selection='protein',directory_pdb=directory_pdb,filename=filename)
                     r_prots.append(r_prot)
-                if len(r_prot) == 0:
-                    print("Folder %s is emply or contain no PDB files!"%directory_pdb)
-                    exit()
                 r = np.append(r,r_prots)
+            if len(r_prots) == 0:
+                print("Folder %s is emply or contain no PDB files!"%directory_pdb)
+                exit()
 
     rmax = np.amax(r)
     if verbose:

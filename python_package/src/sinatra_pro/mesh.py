@@ -24,7 +24,6 @@ class mesh:
         """Number of faces"""
         return
     
-
     def calc_radius(self):
         """Calculate distance of the vertex furthest away from origin """
         return np.amax(np.linalg.norm(self.vertices,axis=1))
@@ -192,9 +191,11 @@ class mesh:
         lmin = np.amin(self.vertices,axis=0)
         box = np.append((lmax-lmin)*1.2,[90.0,90.0,90.0])
         temp -= lmin
-        if int(MDAnalysis.__version__[0]) == 0:
+
+        mda_version = [int(a) for a in MDAnalysis.__version__.split('.')]
+        if mda_version[0] == 0 and mda_version[1] >= 19:
             self.neighbor_search_old(cutoff=sm_radius,coords=temp,box=box) # neighbor grid search to identify vertex pairs within r < cutoff apart
-        elif int(MDAnalysis.__version__[0]) == 1:
+        elif mda_version[0] == 1 and (mda_version[2] >= 2 or mda_version[1] >= 1):
             self.neighbor_search_new(cutoff=sm_radius,coords=temp,box=box) # neighbor grid search to identify vertex pairs within r < cutoff apart  
         else:
             self.calc_distance_matrix()
