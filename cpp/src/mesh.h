@@ -347,7 +347,7 @@ int pdb_to_mesh(string pdbpath_A, string pdbpath_B, string mshpath_A, string msh
         string filename = file.path();
         string extension = filename.substr(filename.size()-4,4);
         if (not extension.compare(".pdb"))
-        {
+        { 
             mesh meshA;
             meshA.coords = read_pdb(filename);
             double radius = meshA.calc_max_radius();
