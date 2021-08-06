@@ -66,7 +66,7 @@ vector<vector<double> > compute_ec_curve(mesh meshA, vector<vector<double> > dir
         {
             for(int i_fil=0;i_fil<n_filtration;i_fil++)
                 ec_curves[i_dir][i_fil] /= binsize; 
-        }/*
+        }
         else
         {
             // Integrate to compute EC curve
@@ -99,7 +99,6 @@ vector<vector<double> > compute_ec_curve(mesh meshA, vector<vector<double> > dir
                 cout << "Please choose from one of the EC type: ECT / DECT / SECT\n";
             }
         }
-        */
     }
     return ec_curves;
 }
@@ -110,8 +109,6 @@ int compute_ec_curve_multiple_files(string mshpath_A, string mshpath_B, vector<v
     ofstream ecfile, yfile;
     ecfile.open(ec_filename);
     yfile.open(y_filename);
-    // vector<vector<double> > ec_matrix;
-    vector<int> label;
     for (const auto & file : experimental::filesystem::directory_iterator(mshpath_A))
     {
         string filename = file.path();
@@ -137,7 +134,6 @@ int compute_ec_curve_multiple_files(string mshpath_A, string mshpath_B, vector<v
                 }
             }
             ecfile << '\n';
-            //label.push_back(0);
             yfile << "0\n";
         }
     }
@@ -165,10 +161,9 @@ int compute_ec_curve_multiple_files(string mshpath_A, string mshpath_B, vector<v
                     ecfile << setprecision(6) << ec_curves[i_dir][i_fil] << ' ';
                 }
             }
+            yfile << "1\n";
+            ecfile << '\n';
         }
-        ecfile << '\n';
-        //label.push_back(1);
-        yfile << "1\n";
     }
     ecfile.close();
     yfile.close();
