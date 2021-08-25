@@ -185,6 +185,8 @@ vert_prob = reconstruct_on_multiple_mesh(protA,protB,directions,
         n_filtration=n_filtration,
         sm_radius=sm_radius,
         directory_mesh="%s/msh/%s_%.1f"%(directory,protA,sm_radius),
+        parallel=parallel,
+        n_core=n_core
         verbose=verbose)
 
 np.savetxt("%s/rate_atom_%s_%s_%s_%.1f_%d_%d_%.2f_%d.txt"%(directory,ec_type,protA,protB,sm_radius,n_cone,n_direction_per_cone,cap_radius,n_filtration),vert_prob)
