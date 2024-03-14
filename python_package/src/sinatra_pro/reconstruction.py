@@ -138,7 +138,7 @@ def write_vert_prob_on_pdb_residue(vert_prob,protA=None,protB=None,selection="pr
                 y[a.ix] = rate_res[i_r]
         ymin = np.amin(y)
         ymax = np.amax(y)
-        y = (vert_prob - ymin)/(ymax-ymin)*100
+        y = (y - ymin)/(ymax-ymin)*100
     protein.tempfactors = y
     protein.write(pdb_out_file)
     return
